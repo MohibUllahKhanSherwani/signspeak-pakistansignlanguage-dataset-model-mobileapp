@@ -1,0 +1,11 @@
+# Core Dependencies
+tensorflow==2.15.0
+numpy==1.26.4
+opencv-contrib-python==4.9.0.80
+mediapipe==0.10.9
+scikit-learn==1.4.0
+scipy==1.12.0
+joblib==1.3.2
+
+# Note: scipy 1.17.0 was detected in venv but is incompatible with Python 3.11
+# Using scipy 1.12.0 for compatibility with TensorFlow 2.15.0

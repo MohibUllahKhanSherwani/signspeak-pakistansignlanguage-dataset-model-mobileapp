@@ -1,0 +1,12 @@
+# Python version requirement for SignSpeak Data Collection
+# 
+# Supported: Python 3.9, 3.10, 3.11
+# Recommended: Python 3.11.9
+# 
+# Tested configuration:
+#   - Python 3.11.9
+#   - TensorFlow 2.15.0
+#   - Windows 11
+#
+# Note: Python 3.12+ is NOT supported by TensorFlow 2.15.0
+python_requires = ">=3.9,<3.12"
