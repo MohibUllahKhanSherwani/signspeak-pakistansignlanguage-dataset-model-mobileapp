@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-In%20Development-yellow.svg)]()
 
-**SignSpeak** is a comprehensive Final Year Project (FYP) designed to bridge the communication gap between the Deaf/Hard-of-Hearing community and hearing individuals in Pakistan. It is a mobile-based system that translates Pakistan Sign Language (PSL) gestures into text in real-time.
+**SignSpeak** is a comprehensive Final Year Project (FYP) designed to bridge the communication gap between the Deaf/Hard-of-Hearing community and hearing individuals in Pakistan. It is a mobile-based system that translates Pakistan Sign Language (PSL) gestures into text.
 
 ---
 
