@@ -26,7 +26,7 @@ PREDICTION_THRESHOLD = 0.5
 USE_AUGMENTATION = True          # Enable/disable augmentation
 AUGMENTATION_MULTIPLIER = 3      # How many augmented versions per original (3x recommended)
 AUGMENTATION_PROBABILITIES = {
-    'horizontal_flip': 0.5,      # Mirror sign (swap hands) - VERY EFFECTIVE
+    # 'horizontal_flip': 0.5,    # DISABLED: PSL gestures are non-symmetric
     'time_warp': 0.5,            # Speed variations - ESSENTIAL
     'spatial_scale': 0.5,        # Distance from camera variations
     'spatial_translate': 0.5,    # Position variations
