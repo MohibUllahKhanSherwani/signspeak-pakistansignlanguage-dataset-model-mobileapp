@@ -27,9 +27,9 @@
 SignSpeak is part of a larger Final Year Project (FYP) at COMSATS University Islamabad, Abbottabad Campus. This repository specifically handles the machine learning component:
 
 - **Data Collection**: GUI-based tool for recording PSL sign sequences
-- **Feature Extraction**: MediaPipe holistic landmark detection (pose + hands)
+- **Feature Extraction**: MediaPipe hand landmark detection (63 per hand)
 - **Model Training**: LSTM-based deep learning with optional data augmentation
-- **Inference**: Real-time sign recognition with performance metrics
+- **Inference**: Real-time sign recognition using hand landmarks
 
 **Note**: This is the ML data collection and training module. The complete SignSpeak system includes a Flutter mobile app and FastAPI backend (developed separately).
 
@@ -166,7 +166,8 @@ SignSpeak-DataCollection/
 │   ├── realtime_inference_enhanced.py    # Enhanced inference with model selection
 │   ├── action_model.h5             # Trained model (after training)
 │   ├── label_encoder.pkl           # Label encoder (after training)
-│   └── links_to_words.txt          # Reference links to PSL dictionary
+│   ├── mediapipe_utils.py          # Centralized MediaPipe utilities (Hands-only)
+│   ├── links_to_words.txt          # Reference links to PSL dictionary
 ├── SRS/                            # Software Requirements Specification
 │   └── srs.txt
 ├── SDD/                            # Software Design Document
@@ -233,6 +234,18 @@ python train_model_with_augmentation.py --augment
 python compare_models.py
 ```
 
+### Which training script should I use?
+
+| Feature | `train_model.py` | `train_model_with_augmentation.py` |
+|---------|------------------|------------------------------------|
+| **Augmentation** | ❌ No | ✅ Yes (Optional `--augment`) |
+| **Regularization** | ❌ None | ✅ Dropout layers (0.2-0.3) |
+| **Early Stopping** | ❌ No | ✅ Yes (Restores best weights) |
+| **LR Scheduling** | ❌ No | ✅ Yes (ReduceLROnPlateau) |
+| **Checkpointing**| ❌ No | ✅ Saves `best_action_model.h5` |
+| **Dataset Size** | Original (1x) | Increased (3x - 5x) |
+| **Best For** | Local testing | Production / Final App |
+
 ### 4. Test Model
 
 ```bash
@@ -262,14 +275,17 @@ python train_model_with_augmentation.py --augment --augment-multiplier 5
 python train_model_with_augmentation.py --augment --epochs 150
 ```
 
-**Augmentation Techniques**:
-- Time warping (0.8x-1.2x speed)
-- Horizontal flipping (mirror + hand swapping)
-- Spatial scaling (0.9x-1.1x)
-- Spatial translation (±10%)
-- Rotation (±15°)
-- Gaussian noise (1% std)
-- Temporal cropping (±10%)
+**Augmentation Deep Dive**:
+- **In-Memory**: Augmentation is done **entirely in memory** during training. No extra files are saved to `MP_Data`.
+- **Margin of Increase**: By default, using `--augment` with the default multiplier (3x) increases a 50rd-sequence dataset to **150 sequences** per sign.
+- **Techniques**:
+    - Time warping (0.8x-1.2x speed)
+    - **Horizontal flipping (DISABLED)**: Removed for PSL because gestures are **NON-SYMMETRIC**. Mirroring a sign can change its meaning or result in an invalid gesture.
+    - Spatial scaling (0.9x-1.1x)
+    - Spatial translation (±10% shift)
+    - Rotation (±15°)
+    - Gaussian noise (1% std)
+    - Temporal cropping (±10%)
 
 ### Configuration
 
@@ -294,7 +310,7 @@ PREDICTION_THRESHOLD = 0.5  # Minimum confidence
 
 LSTM-based sequential model:
 ```
-Input: (30 frames, 225 features)
+Input: (30 frames, 126 features)
 ├── LSTM(64, return_sequences=True)
 ├── LSTM(128, return_sequences=True)
 ├── LSTM(64)
@@ -302,11 +318,10 @@ Input: (30 frames, 225 features)
 ├── Dense(32)
 └── Dense(num_classes, softmax)
 
-Total params: ~500K
+Total params: ~250K
 ```
 
-**Features**: 225 values per frame
-- Pose: 33 landmarks × 3 coords = 99
+**Features**: 126 values per frame
 - Left hand: 21 landmarks × 3 coords = 63
 - Right hand: 21 landmarks × 3 coords = 63
 

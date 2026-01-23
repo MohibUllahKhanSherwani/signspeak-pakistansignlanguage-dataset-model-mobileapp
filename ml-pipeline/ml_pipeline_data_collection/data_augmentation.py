@@ -21,7 +21,7 @@ class SignLanguageAugmenter:
     Augmentation pipeline for sign language landmark sequences.
     
     Landmarks shape: (sequence_length, num_features)
-    For PSL: (30, 225) = 30 frames, 225 features (pose + hands)
+    For PSL: (30, 126) = 30 frames, 126 features (left_hand + right_hand)
     """
     
     def __init__(self, sequence_length=30):
@@ -163,8 +163,8 @@ class SignLanguageAugmenter:
         """
         Horizontal flip: Mirror the sign (swap left/right hands).
         
-        THIS IS VERY EFFECTIVE FOR SIGN LANGUAGE!
-        Doubles your dataset size.
+        NOTE: This is disabled for PSL because gestures are NON-SYMMETRIC.
+        Left-handed and right-handed signs carry different semantic meanings.
         
         Args:
             sequence: (seq_len, features) numpy array
@@ -179,12 +179,12 @@ class SignLanguageAugmenter:
         landmarks_3d[:, :, 0] = 1.0 - landmarks_3d[:, :, 0]
         
         # IMPORTANT: Swap left and right hand landmarks
-        # Assuming structure: [pose (33*3), left_hand (21*3), right_hand (21*3)]
+        # Structure: [left_hand (21*3), right_hand (21*3)] -> Total 126 features (42 landmarks)
         flipped = landmarks_3d.copy()
         
-        # Swap left hand (indices 33-53) with right hand (indices 54-74)
-        left_start, left_end = 33, 54
-        right_start, right_end = 54, 75
+        # Swap left hand (indices 0-20) with right hand (indices 21-41)
+        left_start, left_end = 0, 21
+        right_start, right_end = 21, 42
         
         flipped[:, left_start:left_end] = landmarks_3d[:, right_start:right_end]
         flipped[:, right_start:right_end] = landmarks_3d[:, left_start:left_end]
@@ -250,7 +250,7 @@ class SignLanguageAugmenter:
                 'spatial_rotate': 0.3,
                 'add_noise': 0.3,
                 'temporal_crop': 0.3,
-                'horizontal_flip': 0.5,  # Very effective!
+                # 'horizontal_flip': 0.5, # DISABLED for PSL (Non-symmetric)
             }
         
         augmented = sequence.copy()
@@ -337,8 +337,8 @@ if __name__ == "__main__":
     print("Sign Language Data Augmentation Demo")
     print("=" * 50)
     
-    # Simulate a sequence (30 frames, 225 features)
-    dummy_sequence = np.random.randn(30, 225)
+    # Simulate a sequence (30 frames, 126 features)
+    dummy_sequence = np.random.randn(30, 126)
     
     augmenter = SignLanguageAugmenter()
     
@@ -364,7 +364,7 @@ if __name__ == "__main__":
     print(f"   Augmented shape: {augmented.shape}")
     
     print("\n5. Batch Augmentation (3x multiplier):")
-    batch = np.random.randn(10, 30, 225)  # 10 sequences
+    batch = np.random.randn(10, 30, 126)  # 10 sequences
     augmented_batch = augmenter.augment_batch(batch, multiplier=3)
     print(f"   Original batch: {batch.shape}")
     print(f"   Augmented batch: {augmented_batch.shape}")

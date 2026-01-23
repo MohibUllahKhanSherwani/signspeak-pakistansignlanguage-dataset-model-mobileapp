@@ -6,31 +6,12 @@ from tensorflow.keras.models import load_model
 import joblib
 import time
 import mediapipe as mp
+from mediapipe_utils import mediapipe_detection, extract_keypoints, draw_landmarks
 
 from actions_config import load_actions, SEQUENCE_LENGTH, PREDICTION_THRESHOLD, DATA_PATH
 
-mp_holistic = mp.solutions.holistic
-mp_drawing = mp.solutions.drawing_utils
 
-def mediapipe_detection(image, model):
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image_rgb.flags.writeable = False
-    results = model.process(image_rgb)
-    image_rgb.flags.writeable = True
-    image_bgr = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR)
-    return image_bgr, results
 
-def extract_keypoints(results):
-    pose = np.zeros(33*3)
-    if results.pose_landmarks:
-        pose = np.array([[lm.x, lm.y, lm.z] for lm in results.pose_landmarks.landmark]).flatten()
-    left = np.zeros(21*3)
-    if results.left_hand_landmarks:
-        left = np.array([[lm.x, lm.y, lm.z] for lm in results.left_hand_landmarks.landmark]).flatten()
-    right = np.zeros(21*3)
-    if results.right_hand_landmarks:
-        right = np.array([[lm.x, lm.y, lm.z] for lm in results.right_hand_landmarks.landmark]).flatten()
-    return np.concatenate([pose, left, right])
 
 def prob_viz(res, actions, input_frame):
     # Draw probability bars on image and return it
@@ -54,7 +35,7 @@ def main():
     sentence = []
     predictions = []
     cap = cv2.VideoCapture(0)
-    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+    with mp.solutions.holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -62,9 +43,7 @@ def main():
                 break
             image, results = mediapipe_detection(frame, holistic)
             # draw landmarks
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
-            mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
-            mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+            draw_landmarks(image, results)
 
             keypoints = extract_keypoints(results)
             sequence.append(keypoints)
