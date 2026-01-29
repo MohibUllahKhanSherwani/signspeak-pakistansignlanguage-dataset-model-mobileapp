@@ -47,10 +47,12 @@ htmlcov/
 .env
 .venv
 venv/
-*.h5
 .DS_Store
 *.npy
 
 # Documentation
 SDD/
 SRS/
+
+# Reports
+ml_pipeline_data_collection/comparison_reports/
