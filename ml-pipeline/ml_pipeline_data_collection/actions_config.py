@@ -11,7 +11,7 @@ DATA_PATH = os.path.join(config_dir, "MP_Data")
 
 # Recording params
 SEQUENCE_LENGTH = 30          # number of frames per sequence
-NUM_SEQUENCES = 50            # how many sequences per action
+NUM_SEQUENCES = 50            # how many sequences per action (50 is sufficient with augmentation)
 FRAME_WAIT_MS = 50           # delay between frames during collection
 
 # Model params
@@ -24,7 +24,7 @@ PREDICTION_THRESHOLD = 0.5
 
 # Augmentation params
 USE_AUGMENTATION = True          # Enable/disable augmentation
-AUGMENTATION_MULTIPLIER = 2      # Reduced to 2x total dataset size
+AUGMENTATION_MULTIPLIER = 3      # Data expansion factor (e.g., 3x total data)
 AUGMENTATION_PROBABILITIES = {
     'time_warp': 0.3,            # Speed variations (reduced)
     'spatial_scale': 0.2,        # Distance variations (reduced)

@@ -1,18 +1,19 @@
 1. hi/hello: https://psl.org.pk/dictionary/65-sentences/4309-hello
 2. assalamualaikum: https://psl.org.pk/dictionary/65-sentences/4268-assalam-o-alaikum
-3. aircrash: https://psl.org.pk/dictionary/3-airport/161-air-crash  !
-4. airplane: https://psl.org.pk/dictionary/3-airport/162-airplane
-5. airplanearrival: https://psl.org.pk/dictionary/3-airport/163-arrival
-6. goodmorning: https://psl.org.pk/dictionary/65-sentences/4303-good-morning
-7. goodnight: https://psl.org.pk/dictionary/65-sentences/4304-good-night
-8. excuseme: https://psl.org.pk/dictionary/65-sentences/4299-excuse-me
-9. water: https://psl.org.pk/dictionary/31-drinks/7070-water
-10. bring: https://psl.org.pk/dictionary/72-verbs/4871-bring
-11. goaway: https://psl.org.pk/dictionary/65-sentences/4300-go-away!
-12. goodafternoon: https://psl.org.pk/dictionary/65-sentences/4301-good-afternoon
-13. donttouch: https://psl.org.pk/dictionary/65-sentences/4297-don-t-touch !
-14. please: https://psl.org.pk/dictionary/65-sentences/4364-please
-15. thankyou: https://psl.org.pk/dictionary/65-sentences/4369-thank-you
+3. thankyou: https://psl.org.pk/dictionary/65-sentences/4369-thank-you
+
+4. aircrash: https://psl.org.pk/dictionary/3-airport/161-air-crash  !
+5. airplane: https://psl.org.pk/dictionary/3-airport/162-airplane
+6. airplanearrival: https://psl.org.pk/dictionary/3-airport/163-arrival
+7. goodmorning: https://psl.org.pk/dictionary/65-sentences/4303-good-morning
+8. goodnight: https://psl.org.pk/dictionary/65-sentences/4304-good-night
+9. excuseme: https://psl.org.pk/dictionary/65-sentences/4299-excuse-me
+10. water: https://psl.org.pk/dictionary/31-drinks/7070-water
+11. bring: https://psl.org.pk/dictionary/72-verbs/4871-bring
+12. goaway: https://psl.org.pk/dictionary/65-sentences/4300-go-away!
+13. goodafternoon: https://psl.org.pk/dictionary/65-sentences/4301-good-afternoon
+14. donttouch: https://psl.org.pk/dictionary/65-sentences/4297-don-t-touch !
+15. please: https://psl.org.pk/dictionary/65-sentences/4364-please
 16. seeyoulater: https://psl.org.pk/dictionary/65-sentences/4365-see-you-later!
 17. walaikumassalam: https://psl.org.pk/dictionary/65-sentences/4379-walaikum-as-salaam
 18. welcome: https://psl.org.pk/dictionary/65-sentences/4380-welcome

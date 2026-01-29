@@ -13,7 +13,7 @@ from sklearn.metrics import confusion_matrix, classification_report
 import joblib
 import json
 
-from actions_config import load_actions, DATA_PATH, SEQUENCE_LENGTH
+from actions_config import load_actions, DATA_PATH, SEQUENCE_LENGTH, AUGMENTATION_MULTIPLIER
 from train_model import load_data as load_data_simple, build_model as build_model_simple
 from train_model_with_augmentation import load_data, build_model
 from data_augmentation import create_augmented_dataset
@@ -249,17 +249,20 @@ def main():
     input("Baseline done! Press Enter to train augmented model...")
     
     # Train augmented model
-    augmented_results = train_and_evaluate(actions, use_augmentation=True, augment_multiplier=3)
+    augmented_results = train_and_evaluate(actions, use_augmentation=True, augment_multiplier=AUGMENTATION_MULTIPLIER)
     
     # Compare
     comparison = compare_models(baseline_results, augmented_results)
     
     # Save report
-    report_file = f"comparison_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    report_dir = "comparison_reports"
+    os.makedirs(report_dir, exist_ok=True)
+    report_file = os.path.join(report_dir, f"comparison_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+    
     with open(report_file, 'w') as f:
         json.dump(comparison, f, indent=2)
     
-    print(f"\n💾 Detailed report saved: {report_file}")
+    print(f"\n💾 Detailed report saved to: {report_file}")
     print("\n✅ Comparison complete!")
     print("\n📊 Next Steps:")
     print("   1. Review the comparison above")

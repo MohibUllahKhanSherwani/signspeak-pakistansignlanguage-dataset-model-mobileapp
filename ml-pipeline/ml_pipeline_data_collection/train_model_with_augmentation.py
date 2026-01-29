@@ -23,7 +23,7 @@ import argparse
 
 from actions_config import (
     load_actions, DATA_PATH, SEQUENCE_LENGTH, 
-    NUM_SEQUENCES, BATCH_SIZE, EPOCHS, LEARNING_RATE
+    NUM_SEQUENCES, BATCH_SIZE, EPOCHS, LEARNING_RATE, AUGMENTATION_MULTIPLIER
 )
 from data_augmentation import create_augmented_dataset
 
@@ -111,8 +111,8 @@ def main():
     parser.add_argument(
         '--augment-multiplier',
         type=int,
-        default=3,
-        help='Augmentation multiplier (default: 3x)'
+        default=AUGMENTATION_MULTIPLIER,
+        help=f'Augmentation multiplier (default: {AUGMENTATION_MULTIPLIER}x)'
     )
     parser.add_argument(
         '--no-dropout',
