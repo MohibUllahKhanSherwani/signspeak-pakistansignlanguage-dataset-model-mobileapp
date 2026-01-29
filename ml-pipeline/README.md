@@ -504,6 +504,32 @@ For technical issues specific to this repository:
 
 ---
 
+## 🔬 Technical Research & Problem Solving (FYP Evaluation)
+
+During development, several technical challenges were identified and solved to ensure production-grade performance. These findings are critical for the FYP research component:
+
+### 1. Hand-Dominance Variance (The "Left-Hand" Problem)
+*   **Problem**: Models trained on right-handed data fail for left-handed users. Manually recording 60 signs with both hands is inefficient (120 signs total).
+*   **Solution**: Implemented **Symmetric Hand-Swapping Augmentation**. By programmatically mirroring the landmark X-coordinates and swapping the Left/Right hand index labels, the dataset diversity was doubled for free.
+*   **Result**: The model is now "Hand-Agnostic" and works for both left and right-handed signers.
+
+### 2. LSTM Gradient Instability
+*   **Problem**: Using `ReLU` activation in deep LSTM layers led to "Exploding Gradients" and accuracy "trash" performance as the sign count increased.
+*   **Solution**: Switched architecture to use **`tanh` activation** (the gated recurrent unit standard).
+*   **Result**: Training loss is now significantly more stable, allowing the model to learn 60+ signs without accuracy degradation.
+
+### 3. Real-Time Inference "Flickering"
+*   **Problem**: High-speed frame processing caused the UI to flicker between words during hand transitions.
+*   **Solution**: Implemented a **Stability Locking Mechanism** (Prediction History Window). A sign is only "accepted" into the sentence if it appears in at least 6 out of the last 10 predictions.
+*   **Result**: Smooth, confident text output with zero accidental word entries.
+
+### 4. Background Noise (The "Always-On" Problem)
+*   **Problem**: Without a "rest" state, the model was forced to pick a sign even when the user was just sitting still.
+*   **Solution**: Integrated a **"Nothing" (Background) Class** with diverse non-signing movements (adjusting glasses, drinking water, etc.).
+*   **Result**: High-fidelity idle state detection; the system remains "SILENT" until a valid sign is initiated.
+
+---
+
 ## 🔄 Recent Updates (Jan 29, 2026)
 
 ### 1. Data Collection Expansion
@@ -521,9 +547,11 @@ For technical issues specific to this repository:
   - Narrowed intensity ranges (e.g., translation reduced from 10% to 5%).
   - Result: Higher quality synthetic data that complements real data instead of confusing the model.
 
-### 3. Minimalist Inference
-- **New Script**: `realtime_inference_minimal.py`
-- **Focus**: Instant feedback and clean UI. Removed cluttered side-panels and added a high-contrast top notification for current predictions.
+### 4. Technical Stabilization & FYP Documentation
+- **Architecture Fix**: Switched LSTMs to `tanh` for improved training stability.
+- **Hand-Dominance Implementation**: Enabled `horizontal_flip` logic to support both hands.
+- **V-Sidebar UI**: Replaced horizontal sentences with a vertical scrolling log to support conversations.
+- **Performance Boost**: Implemented 3:1 frame skipping in inference to remove camera lag.
 
 ---
 

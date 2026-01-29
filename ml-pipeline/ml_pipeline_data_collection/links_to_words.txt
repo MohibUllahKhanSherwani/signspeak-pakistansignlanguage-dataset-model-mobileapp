@@ -2,13 +2,14 @@
 2. assalamualaikum: https://psl.org.pk/dictionary/65-sentences/4268-assalam-o-alaikum
 3. thankyou: https://psl.org.pk/dictionary/65-sentences/4369-thank-you
 4. goodbye: https://psl.org.pk/dictionary/65-sentences/4305-goodbye
+5. excuseme: https://psl.org.pk/dictionary/65-sentences/4299-excuse-me
 
-4. aircrash: https://psl.org.pk/dictionary/3-airport/161-air-crash  !
-5. airplane: https://psl.org.pk/dictionary/3-airport/162-airplane
-6. airplanearrival: https://psl.org.pk/dictionary/3-airport/163-arrival
-7. goodmorning: https://psl.org.pk/dictionary/65-sentences/4303-good-morning
+6. aircrash: https://psl.org.pk/dictionary/3-airport/161-air-crash  !
+7. airplane: https://psl.org.pk/dictionary/3-airport/162-airplane
+8. airplanearrival: https://psl.org.pk/dictionary/3-airport/163-arrival
+9. goodmorning: https://psl.org.pk/dictionary/65-sentences/4303-good-morning
 8. goodnight: https://psl.org.pk/dictionary/65-sentences/4304-good-night
-9. excuseme: https://psl.org.pk/dictionary/65-sentences/4299-excuse-me
+
 10. water: https://psl.org.pk/dictionary/31-drinks/7070-water
 11. bring: https://psl.org.pk/dictionary/72-verbs/4871-bring
 12. goaway: https://psl.org.pk/dictionary/65-sentences/4300-go-away!

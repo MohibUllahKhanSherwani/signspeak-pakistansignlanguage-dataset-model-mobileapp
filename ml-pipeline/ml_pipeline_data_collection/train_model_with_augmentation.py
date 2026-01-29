@@ -67,16 +67,16 @@ def build_model(input_shape, num_classes, use_dropout=True):
     """
     model = Sequential()
     
-    # LSTM layers
-    model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=input_shape))
+    # LSTM layers (tanh is standard/stable for LSTMs)
+    model.add(LSTM(64, return_sequences=True, activation='tanh', input_shape=input_shape))
     if use_dropout:
         model.add(Dropout(0.2))
     
-    model.add(LSTM(128, return_sequences=True, activation='relu'))
+    model.add(LSTM(128, return_sequences=True, activation='tanh'))
     if use_dropout:
         model.add(Dropout(0.2))
     
-    model.add(LSTM(64, return_sequences=False, activation='relu'))
+    model.add(LSTM(64, return_sequences=False, activation='tanh'))
     if use_dropout:
         model.add(Dropout(0.2))
     
