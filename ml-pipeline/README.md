@@ -280,17 +280,23 @@ python train_model_with_augmentation.py --augment --augment-multiplier 5
 python train_model_with_augmentation.py --augment --epochs 150
 ```
 
-**Augmentation Deep Dive**:
-- **In-Memory**: Augmentation is done **entirely in memory** during training. No extra files are saved to `MP_Data`.
-- **Margin of Increase**: By default, using `--augment` with the default multiplier (3x) increases a 50rd-sequence dataset to **150 sequences** per sign.
-- **Techniques**:
-    - **Time warping** (0.9x-1.1x speed) - *Softened for better stability*
-    - **Horizontal flipping (DISABLED)**: Removed for PSL because gestures are **NON-SYMMETRIC**.
-    - **Spatial scaling** (0.95x-1.05x) - *Conservative zoom*
-    - **Spatial translation** (±5% shift) - *Subtle positioning*
-    - **Rotation (DISABLED)**: Set to 0.0 probability to prevent gesture distortion.
-    - **Gaussian noise** (0.01 std)
-    - **Temporal cropping** (±10%)
+### Data Augmentation: Deep Dive
+
+Augmentation effectively increases your dataset by **3x** without additional manual recording.
+
+#### Augmentation Parameters & Rationale
+
+| Technique | Probability | Range / Value | Rationale |
+| :--- | :---: | :--- | :--- |
+| **Horizontal Flip** | 0.3 | `x = 1.0 - x` | **Hand-Agnosticism**: Automatically teaches the model left-handed versions of signs. |
+| **Time Warping** | 0.3 | 0.9x — 1.1x | **Speed Robustness**: Handles naturally fast or slow signing speeds. |
+| **Spatial Scaling** | 0.2 | 0.95x — 1.05x | **Distance Invariance**: Simulates being closer or further from the camera. |
+| **Translation** | 0.1 | ±5% shift | **Position Invariance**: Handles users not perfectly centered in the frame. |
+| **Gaussian Noise** | 0.1 | σ = 0.01 | **Sensor Noise**: Mimics shaky hand tracking or low-light sensor jitter. |
+| **Temporal Crop** | 0.2 | 10% max | **Timing Robustness**: Handles signs that start or end slightly early/late. |
+
+**Why use "Conservative" Augmentation?**
+Sign language is highly precise. Aggressive augmentation (like 90° rotation) would distort the meaning of the gestures. Our pipeline uses conservative ranges to ensure the synthetic data remains linguistically valid while still providing enough variety for the AI to learn generalization.
 
 ### Configuration
 
