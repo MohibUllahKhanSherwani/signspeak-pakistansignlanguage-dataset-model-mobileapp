@@ -4,3 +4,5 @@ thankyou
 nothing
 goodbye
 excuseme
+water
+bring
