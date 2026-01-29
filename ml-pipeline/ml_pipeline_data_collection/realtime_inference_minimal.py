@@ -122,7 +122,11 @@ def main():
             cv2.putText(image, "[Q] Quit | [C] Clear History", (sidebar_width + 20, h - 20),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
 
-            cv2.imshow('SignSpeak - Pro History Mode', image)
+            # --- UPSCALED DISPLAY ---
+            # Resize by 1.5x for better visibility on high-res screens
+            large_frame = cv2.resize(image, (int(w * 1.5), int(h * 1.5)))
+            
+            cv2.imshow('SignSpeak - Pro History Mode', large_frame)
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
                 break
