@@ -13,7 +13,7 @@ from sklearn.metrics import confusion_matrix, classification_report
 import joblib
 import json
 
-from actions_config import load_actions, DATA_PATH, SEQUENCE_LENGTH, AUGMENTATION_MULTIPLIER
+from actions_config import load_actions, DATA_PATH, SEQUENCE_LENGTH, AUGMENTATION_MULTIPLIER, EPOCHS
 from train_model import load_data as load_data_simple, build_model as build_model_simple
 from train_model_with_augmentation import load_data, build_model
 from data_augmentation import create_augmented_dataset
@@ -73,7 +73,7 @@ def train_and_evaluate(actions, use_augmentation=False, augment_multiplier=3):
     print("\nTraining...")
     history = model.fit(
         X_train, y_train,
-        epochs=100,  # Reduced for comparison
+        epochs=EPOCHS,  # Use config epochs
         batch_size=16,
         validation_data=(X_test, y_test),
         verbose=1

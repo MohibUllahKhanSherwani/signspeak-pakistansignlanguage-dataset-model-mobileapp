@@ -26,6 +26,7 @@ PREDICTION_THRESHOLD = 0.5
 USE_AUGMENTATION = True          # Enable/disable augmentation
 AUGMENTATION_MULTIPLIER = 3      # Data expansion factor (e.g., 3x total data)
 AUGMENTATION_PROBABILITIES = {
+    'horizontal_flip': 0.3,      # Hand-swapping (mirroring) - ESSENTIAL for hand-dominance
     'time_warp': 0.3,            # Speed variations (reduced)
     'spatial_scale': 0.2,        # Distance variations (reduced)
     'spatial_translate': 0.1,    # Position variations (reduced)
