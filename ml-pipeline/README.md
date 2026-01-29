@@ -2,7 +2,7 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue.svg)](https://www.python.org/downloads/)
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15.0-orange.svg)](https://www.tensorflow.org/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 
 **SignSpeak** is a comprehensive machine learning pipeline for Pakistan Sign Language (PSL) recognition. This repository contains tools for data collection, model training, and real-time inference using MediaPipe landmark detection and LSTM neural networks.
 
@@ -54,6 +54,7 @@ SignSpeak is part of a larger Final Year Project (FYP) at COMSATS University Isl
 ### Real-Time Inference
 - ✅ Webcam-based sign recognition
 - ✅ Model selection (baseline vs augmented)
+- ✅ **Minimalist UI Option**: Fast, non-cluttered display for real-time testing
 - ✅ Live accuracy tracking
 - ✅ Performance metrics (FPS, confidence scores)
 
@@ -164,6 +165,7 @@ SignSpeak-DataCollection/
 │   ├── compare_models.py           # Automated model comparison
 │   ├── realtime_inference.py       # Basic inference script
 │   ├── realtime_inference_enhanced.py    # Enhanced inference with model selection
+│   ├── realtime_inference_minimal.py     # Clean, fast UI for instant feedback (Use this for real-time testing)
 │   ├── action_model.h5             # Trained model (after training)
 │   ├── label_encoder.pkl           # Label encoder (after training)
 │   ├── mediapipe_utils.py          # Centralized MediaPipe utilities (Hands-only)
@@ -254,6 +256,9 @@ python realtime_inference.py
 
 # OR test with model selection
 python realtime_inference_enhanced.py --augmented
+
+# 🚀 RECOMMENDED: Test with Minimalist UI (Fast & Clean)
+python realtime_inference_minimal.py --augmented
 ```
 
 ---
@@ -279,13 +284,13 @@ python train_model_with_augmentation.py --augment --epochs 150
 - **In-Memory**: Augmentation is done **entirely in memory** during training. No extra files are saved to `MP_Data`.
 - **Margin of Increase**: By default, using `--augment` with the default multiplier (3x) increases a 50rd-sequence dataset to **150 sequences** per sign.
 - **Techniques**:
-    - Time warping (0.8x-1.2x speed)
-    - **Horizontal flipping (DISABLED)**: Removed for PSL because gestures are **NON-SYMMETRIC**. Mirroring a sign can change its meaning or result in an invalid gesture.
-    - Spatial scaling (0.9x-1.1x)
-    - Spatial translation (±10% shift)
-    - Rotation (±15°)
-    - Gaussian noise (1% std)
-    - Temporal cropping (±10%)
+    - **Time warping** (0.9x-1.1x speed) - *Softened for better stability*
+    - **Horizontal flipping (DISABLED)**: Removed for PSL because gestures are **NON-SYMMETRIC**.
+    - **Spatial scaling** (0.95x-1.05x) - *Conservative zoom*
+    - **Spatial translation** (±5% shift) - *Subtle positioning*
+    - **Rotation (DISABLED)**: Set to 0.0 probability to prevent gesture distortion.
+    - **Gaussian noise** (0.01 std)
+    - **Temporal cropping** (±10%)
 
 ### Configuration
 
@@ -499,7 +504,29 @@ For technical issues specific to this repository:
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: January 2026  
+## 🔄 Recent Updates (Jan 29, 2026)
+
+### 1. Data Collection Expansion
+- **New Actions Added**: 
+  - `hello` (50 sequences collected)
+  - `assalam-o-alaikum` (50 sequences collected)
+- **UI Optimization**: Compact mode implemented in `collect_data_gui.py` to fit smaller laptop screens (600px height).
+- **Shortcut Support**: Added `S` key to start collection, reducing dependency on mouse clicks.
+
+### 2. Augmentation Strategy Optimization
+- **Problem**: Initial aggressive augmentation (15° rotation, 20% warp, 50% probability) was distorting hand landmarks, causing the augmented model to underperform compared to the baseline.
+- **Fix**: Implemented a **Conservative Augmentation Strategy**:
+  - Disabled `spatial_rotate` (risk of flipping sign meaning).
+  - Reduced probability of all techniques to 10-30%.
+  - Narrowed intensity ranges (e.g., translation reduced from 10% to 5%).
+  - Result: Higher quality synthetic data that complements real data instead of confusing the model.
+
+### 3. Minimalist Inference
+- **New Script**: `realtime_inference_minimal.py`
+- **Focus**: Instant feedback and clean UI. Removed cluttered side-panels and added a high-contrast top notification for current predictions.
+
+---
+
+**Version**: 1.1.0  
+**Last Updated**: Jan 29, 2026  
 **Python**: 3.9+ (3.11 recommended)  
-**Status**: Active Development

@@ -24,15 +24,14 @@ PREDICTION_THRESHOLD = 0.5
 
 # Augmentation params
 USE_AUGMENTATION = True          # Enable/disable augmentation
-AUGMENTATION_MULTIPLIER = 3      # How many augmented versions per original (3x recommended)
+AUGMENTATION_MULTIPLIER = 2      # Reduced to 2x total dataset size
 AUGMENTATION_PROBABILITIES = {
-    # 'horizontal_flip': 0.5,    # DISABLED: PSL gestures are non-symmetric
-    'time_warp': 0.5,            # Speed variations - ESSENTIAL
-    'spatial_scale': 0.5,        # Distance from camera variations
-    'spatial_translate': 0.5,    # Position variations
-    'spatial_rotate': 0.3,       # Slight rotation (use carefully)
-    'add_noise': 0.3,            # Sensor noise simulation
-    'temporal_crop': 0.3,        # Partial sign variations
+    'time_warp': 0.3,            # Speed variations (reduced)
+    'spatial_scale': 0.2,        # Distance variations (reduced)
+    'spatial_translate': 0.1,    # Position variations (reduced)
+    'spatial_rotate': 0.0,       # DISABLED: Too risky for sign recognition
+    'add_noise': 0.1,            # Sensor noise (reduced)
+    'temporal_crop': 0.2,        # Start/end variations (reduced)
 }
 
 def load_actions():

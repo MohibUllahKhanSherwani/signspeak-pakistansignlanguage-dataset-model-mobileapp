@@ -27,7 +27,7 @@ class SignLanguageAugmenter:
     def __init__(self, sequence_length=30):
         self.sequence_length = sequence_length
         
-    def time_warp(self, sequence, speed_range=(0.8, 1.2)):
+    def time_warp(self, sequence, speed_range=(0.9, 1.1)):
         """
         Time warping: Speed up or slow down the sequence.
         
@@ -59,7 +59,7 @@ class SignLanguageAugmenter:
             
         return augmented
     
-    def spatial_scale(self, sequence, scale_range=(0.9, 1.1)):
+    def spatial_scale(self, sequence, scale_range=(0.95, 1.05)):
         """
         Spatial scaling: Zoom in/out (simulates different distances).
         
@@ -83,7 +83,7 @@ class SignLanguageAugmenter:
         # Flatten back
         return landmarks_3d.reshape(seq_len, -1)
     
-    def spatial_translate(self, sequence, translate_range=0.1):
+    def spatial_translate(self, sequence, translate_range=0.05):
         """
         Spatial translation: Shift position (x, y offsets).
         
