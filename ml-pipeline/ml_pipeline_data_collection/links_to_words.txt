@@ -3,22 +3,23 @@
 3. thankyou: https://psl.org.pk/dictionary/65-sentences/4369-thank-you
 4. goodbye: https://psl.org.pk/dictionary/65-sentences/4305-goodbye
 5. excuseme: https://psl.org.pk/dictionary/65-sentences/4299-excuse-me
+6. water: https://psl.org.pk/dictionary/31-drinks/7070-water
 7. bring: https://psl.org.pk/dictionary/72-verbs/4871-bring
 
-6. aircrash: https://psl.org.pk/dictionary/3-airport/161-air-crash  !
-7. airplane: https://psl.org.pk/dictionary/3-airport/162-airplane
-8. airplanearrival: https://psl.org.pk/dictionary/3-airport/163-arrival
-9. goodmorning: https://psl.org.pk/dictionary/65-sentences/4303-good-morning
-8. goodnight: https://psl.org.pk/dictionary/65-sentences/4304-good-night
+8. aircrash: https://psl.org.pk/dictionary/3-airport/161-air-crash  !
+9. airplane: https://psl.org.pk/dictionary/3-airport/162-airplane
+10. airplanearrival: https://psl.org.pk/dictionary/3-airport/163-arrival
+11. goodmorning: https://psl.org.pk/dictionary/65-sentences/4303-good-morning
+12. goodnight: https://psl.org.pk/dictionary/65-sentences/4304-good-night
 
-10. water: https://psl.org.pk/dictionary/31-drinks/7070-water
-11. bring: https://psl.org.pk/dictionary/72-verbs/4871-bring
-12. goaway: https://psl.org.pk/dictionary/65-sentences/4300-go-away!
-13. goodafternoon: https://psl.org.pk/dictionary/65-sentences/4301-good-afternoon
-14. donttouch: https://psl.org.pk/dictionary/65-sentences/4297-don-t-touch !
-15. please: https://psl.org.pk/dictionary/65-sentences/4364-please
-16. seeyoulater: https://psl.org.pk/dictionary/65-sentences/4365-see-you-later!
-17. walaikumassalam: https://psl.org.pk/dictionary/65-sentences/4379-walaikum-as-salaam
-18. welcome: https://psl.org.pk/dictionary/65-sentences/4380-welcome
-19. we: https://psl.org.pk/dictionary/63-pronouns/4123-we
-20. you: https://psl.org.pk/dictionary/63-pronouns/4124-you
+
+
+13. goaway: https://psl.org.pk/dictionary/65-sentences/4300-go-away!
+14. goodafternoon: https://psl.org.pk/dictionary/65-sentences/4301-good-afternoon
+15. donttouch: https://psl.org.pk/dictionary/65-sentences/4297-don-t-touch !
+16. please: https://psl.org.pk/dictionary/65-sentences/4364-please
+17. seeyoulater: https://psl.org.pk/dictionary/65-sentences/4365-see-you-later!
+18. walaikumassalam: https://psl.org.pk/dictionary/65-sentences/4379-walaikum-as-salaam
+19. welcome: https://psl.org.pk/dictionary/65-sentences/4380-welcome
+20. we: https://psl.org.pk/dictionary/63-pronouns/4123-we
+21. you: https://psl.org.pk/dictionary/63-pronouns/4124-you
