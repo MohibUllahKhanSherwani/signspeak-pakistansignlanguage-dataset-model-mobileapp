@@ -28,7 +28,7 @@ class DataCollectorGUI:
     def __init__(self):
         self.window = tk.Tk()
         self.window.title("SignSpeak – Enhanced Data Collector")
-        self.window.geometry("900x700")
+        self.window.geometry("900x600")
         self.window.configure(bg="#2C3E50")
         
         # State variables
@@ -53,6 +53,8 @@ class DataCollectorGUI:
         # Keyboard bindings
         self.window.bind("<space>", lambda e: self.toggle_pause())
         self.window.bind("<Escape>", lambda e: self.stop_collection())
+        self.window.bind("<s>", lambda e: self.start_collection_thread())
+        self.window.bind("<S>", lambda e: self.start_collection_thread())
         
         self.window.mainloop()
 
@@ -61,7 +63,7 @@ class DataCollectorGUI:
     # --------------------------
     def build_ui(self):
         # ===== HEADER SECTION =====
-        header_frame = tk.Frame(self.window, bg="#34495E", height=80)
+        header_frame = tk.Frame(self.window, bg="#34495E", height=60)
         header_frame.pack(fill=tk.X, padx=10, pady=(10, 5))
         header_frame.pack_propagate(False)
         
@@ -71,10 +73,10 @@ class DataCollectorGUI:
             font=("Arial", 20, "bold"),
             bg="#34495E",
             fg="#ECF0F1"
-        ).pack(pady=18)
+        ).pack(pady=10)
         
         # ===== CURRENT ACTION DISPLAY =====
-        self.action_display_frame = tk.Frame(self.window, bg="#1ABC9C", height=100)
+        self.action_display_frame = tk.Frame(self.window, bg="#1ABC9C", height=80)
         self.action_display_frame.pack(fill=tk.X, padx=10, pady=5)
         self.action_display_frame.pack_propagate(False)
         
@@ -84,7 +86,7 @@ class DataCollectorGUI:
             font=("Arial", 12),
             bg="#1ABC9C",
             fg="#FFFFFF"
-        ).pack(pady=(10, 0))
+        ).pack(pady=(5, 0))
         
         self.current_action_label = tk.Label(
             self.action_display_frame,
@@ -185,7 +187,7 @@ class DataCollectorGUI:
             table_frame,
             columns=columns,
             show="headings",
-            height=8,
+            height=5,
             yscrollcommand=scrollbar.set
         )
         scrollbar.config(command=self.tree.yview)
