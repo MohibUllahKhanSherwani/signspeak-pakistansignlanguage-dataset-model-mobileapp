@@ -2,3 +2,4 @@ hello
 assalam-o-alaikum
 thankyou
 nothing
+goodbye

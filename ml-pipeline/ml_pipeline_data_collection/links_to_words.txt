@@ -1,6 +1,7 @@
 1. hi/hello: https://psl.org.pk/dictionary/65-sentences/4309-hello
 2. assalamualaikum: https://psl.org.pk/dictionary/65-sentences/4268-assalam-o-alaikum
 3. thankyou: https://psl.org.pk/dictionary/65-sentences/4369-thank-you
+4. goodbye: https://psl.org.pk/dictionary/65-sentences/4305-goodbye
 
 4. aircrash: https://psl.org.pk/dictionary/3-airport/161-air-crash  !
 5. airplane: https://psl.org.pk/dictionary/3-airport/162-airplane
