@@ -162,9 +162,7 @@ class SignLanguageAugmenter:
     def horizontal_flip(self, sequence):
         """
         Horizontal flip: Mirror the sign (swap left/right hands).
-        
-        NOTE: This is disabled for PSL because gestures are NON-SYMMETRIC.
-        Left-handed and right-handed signs carry different semantic meanings.
+        Ensures that 'missing' hands (all zeros) stay zeroed.
         
         Args:
             sequence: (seq_len, features) numpy array
@@ -175,21 +173,26 @@ class SignLanguageAugmenter:
         seq_len = len(sequence)
         landmarks_3d = sequence.reshape(seq_len, -1, 3)
         
+        # Create a mask for non-zero landmarks (where a hand is actually present)
+        # We check if any of the 3 coordinates (x,y,z) are non-zero
+        mask = np.any(landmarks_3d != 0, axis=2)
+        
         # Flip x coordinates (y and z stay the same)
-        landmarks_3d[:, :, 0] = 1.0 - landmarks_3d[:, :, 0]
+        # ONLY apply to where landmark is NOT zero
+        flipped_x = landmarks_3d.copy()
+        flipped_x[mask, 0] = 1.0 - landmarks_3d[mask, 0]
         
-        # IMPORTANT: Swap left and right hand landmarks
-        # Structure: [left_hand (21*3), right_hand (21*3)] -> Total 126 features (42 landmarks)
-        flipped = landmarks_3d.copy()
+        # Swap left and right hand landmarks
+        # Structure: [left_hand (21 landmarks), right_hand (21 landmarks)]
+        final_flipped = flipped_x.copy()
         
-        # Swap left hand (indices 0-20) with right hand (indices 21-41)
-        left_start, left_end = 0, 21
-        right_start, right_end = 21, 42
+        left_hand = flipped_x[:, 0:21]
+        right_hand = flipped_x[:, 21:42]
         
-        flipped[:, left_start:left_end] = landmarks_3d[:, right_start:right_end]
-        flipped[:, right_start:right_end] = landmarks_3d[:, left_start:left_end]
+        final_flipped[:, 0:21] = right_hand
+        final_flipped[:, 21:42] = left_hand
         
-        return flipped.reshape(seq_len, -1)
+        return final_flipped.reshape(seq_len, -1)
     
     def temporal_crop(self, sequence, crop_ratio=0.1):
         """
