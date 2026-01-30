@@ -10,7 +10,7 @@ ACTIONS_FILE = os.path.join(config_dir, "actions.txt")
 DATA_PATH = os.path.join(config_dir, "MP_Data")
 
 # Recording params
-SEQUENCE_LENGTH = 30          # number of frames per sequence
+SEQUENCE_LENGTH = 60          # number of frames per sequence (2.0 seconds)
 NUM_SEQUENCES = 50            # how many sequences per action (50 is sufficient with augmentation)
 FRAME_WAIT_MS = 50           # delay between frames during collection
 
