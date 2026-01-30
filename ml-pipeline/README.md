@@ -534,6 +534,11 @@ During development, several technical challenges were identified and solved to e
 *   **Solution**: Integrated a **"Nothing" (Background) Class** with diverse non-signing movements (adjusting glasses, drinking water, etc.).
 *   **Result**: High-fidelity idle state detection; the system remains "SILENT" until a valid sign is initiated.
 
+### 5. Temporal Window Alignment (The "Complex Sign" Problem)
+*   **Problem**: Multi-phase signs like "Goodbye" often exceeded the 1-second (30-frame) window. Even for short signs, a sliding window during inference caused "Alignment Traps" where a sign was missed if it didn't start at the exact first frame of the window.
+*   **Solution**: Migrated the entire pipeline to a **60-frame (2.0 second)** window. This provides significant "Temporal Padding." 
+*   **Result**: The model is now **Shift-Invariant**; it can accurately recognize a sign regardless of where it starts within the 2-second buffer.
+
 ---
 
 ## 🔄 Recent Updates (Jan 29, 2026)
@@ -561,6 +566,15 @@ During development, several technical challenges were identified and solved to e
 
 ---
 
-**Version**: 1.1.0  
-**Last Updated**: Jan 29, 2026  
+## 🔄 Recent Updates (Jan 30, 2026)
+
+### 1. Temporal Quality Overhaul
+- **60-Frame Standard**: Upgraded the entire ML pipeline from 1.0s to 2.0s windows to support complex Pakistan Sign Language gestures.
+- **Temporal Migration**: Performed a full data migration to ensure all 60 signs benefit from the new temporal padding.
+- **FYP Research Documentation**: Added scientific rationales for augmentation and architecture choices to the project README.
+
+---
+
+**Version**: 1.2.0  
+**Last Updated**: Jan 30, 2026  
 **Python**: 3.9+ (3.11 recommended)  
