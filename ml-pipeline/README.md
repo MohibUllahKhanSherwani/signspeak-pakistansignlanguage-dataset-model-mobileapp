@@ -539,6 +539,11 @@ During development, several technical challenges were identified and solved to e
 *   **Solution**: Migrated the entire pipeline to a **60-frame (2.0 second)** window. This provides significant "Temporal Padding." 
 *   **Result**: The model is now **Shift-Invariant**; it can accurately recognize a sign regardless of where it starts within the 2-second buffer.
 
+### 6. Phantom Hand Suppression (Null-State Training)
+*   **Problem**: For single-handed signs, mirroring data (augmentation) accidentally transformed "invisible" hands (zero-vectors) into "visible" landmarks at the edge of the screen ($x=1.0$), creating "Phantom Hands" that confused the model.
+*   **Solution**: Implemented **Conditional Mirroring Masks**. The augmentation script now detects if a hand is missing and ensures it remains as a perfect zero-vector even after spatial flipping.
+*   **Result**: Force-focuses the model on the active hand while ignoring the background, significantly reducing noise for single-handed PSL signs.
+
 ---
 
 ## 🔄 Recent Updates (Jan 29, 2026)
@@ -571,10 +576,11 @@ During development, several technical challenges were identified and solved to e
 ### 1. Temporal Quality Overhaul
 - **60-Frame Standard**: Upgraded the entire ML pipeline from 1.0s to 2.0s windows to support complex Pakistan Sign Language gestures.
 - **Temporal Migration**: Performed a full data migration to ensure all 60 signs benefit from the new temporal padding.
+- **Phantom Hand Fix**: Patched the augmentation logic to correctly handle "missing hand" states during mirroring.
 - **FYP Research Documentation**: Added scientific rationales for augmentation and architecture choices to the project README.
 
 ---
 
-**Version**: 1.2.0  
+**Version**: 1.2.1  
 **Last Updated**: Jan 30, 2026  
 **Python**: 3.9+ (3.11 recommended)  
