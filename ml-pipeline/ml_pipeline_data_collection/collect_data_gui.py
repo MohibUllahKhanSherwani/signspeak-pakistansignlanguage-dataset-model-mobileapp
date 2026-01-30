@@ -6,6 +6,7 @@ import threading
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 from datetime import datetime
+import json
 import winsound  # For audio feedback on Windows
 
 import mediapipe as mp
@@ -36,6 +37,7 @@ class DataCollectorGUI:
         self.pause_flag = False
         self.is_collecting = False
         self.start_time = None
+        self.lifetime_seconds = self.load_stats()
         
         # Load actions
         try:
@@ -157,14 +159,14 @@ class DataCollectorGUI:
         )
         self.session_time_label.pack(side=tk.LEFT, padx=20, pady=10)
         
-        self.overall_progress_label = tk.Label(
+        self.lifetime_time_label = tk.Label(
             stats_frame,
-            text="📊 Overall: 0/0 sequences (0%)",
+            text="🌍 Total Collection: 00:00:00",
             font=("Arial", 11),
             bg="#34495E",
             fg="#ECF0F1"
         )
-        self.overall_progress_label.pack(side=tk.LEFT, padx=20, pady=10)
+        self.lifetime_time_label.pack(side=tk.LEFT, padx=20, pady=10)
         
         # ===== DATA TABLE =====
         table_frame = tk.Frame(self.window, bg="#2C3E50")
@@ -412,7 +414,6 @@ class DataCollectorGUI:
             percentage = int((collected / needed) * 100) if needed > 0 else 0
             
             total_collected += collected
-            total_needed += len(self.actions) * NUM_SEQUENCES
             
             self.tree.insert("", tk.END, values=(
                 action,
@@ -421,25 +422,57 @@ class DataCollectorGUI:
                 f"{percentage}%"
             ))
         
-        # Update overall progress
-        overall_pct = int((total_collected / total_needed) * 100) if total_needed > 0 else 0
-        self.overall_progress_label.config(
-            text=f"📊 Overall: {total_collected}/{total_needed} sequences ({overall_pct}%)"
-        )
+        # Update lifetime timer label display
+        l_hours, l_remainder = divmod(self.lifetime_seconds, 3600)
+        l_minutes, l_seconds = divmod(l_remainder, 60)
+        self.lifetime_time_label.config(text=f"🌍 Total Collection: {l_hours:02d}:{l_minutes:02d}:{l_seconds:02d}")
 
     # --------------------------
     # Session Timer
     # --------------------------
     def update_session_timer(self):
-        """Update session time display"""
+        """Update session and lifetime time display"""
         if self.start_time and self.is_collecting:
+            # Session time
             elapsed = datetime.now() - self.start_time
-            hours, remainder = divmod(int(elapsed.total_seconds()), 3600)
-            minutes, seconds = divmod(remainder, 60)
-            self.session_time_label.config(text=f"⏱️ Session: {hours:02d}:{minutes:02d}:{seconds:02d}")
+            s_hours, s_remainder = divmod(int(elapsed.total_seconds()), 3600)
+            s_minutes, s_seconds = divmod(s_remainder, 60)
+            self.session_time_label.config(text=f"⏱️ Session: {s_hours:02d}:{s_minutes:02d}:{s_seconds:02d}")
+            
+            # Lifetime time (update once per second)
+            self.lifetime_seconds += 1
+            l_hours, l_remainder = divmod(self.lifetime_seconds, 3600)
+            l_minutes, l_seconds = divmod(l_remainder, 60)
+            self.lifetime_time_label.config(text=f"🌍 Total Collection: {l_hours:02d}:{l_minutes:02d}:{l_seconds:02d}")
+            
+            # Save every 60 seconds to avoid too many writes
+            if self.lifetime_seconds % 60 == 0:
+                self.save_stats()
             
             if self.is_collecting:
                 self.window.after(1000, self.update_session_timer)
+
+    def load_stats(self):
+        """Load lifetime stats from file"""
+        stats_file = os.path.join(DATA_PATH, "stats.json")
+        if os.path.exists(stats_file):
+            try:
+                with open(stats_file, 'r') as f:
+                    data = json.load(f)
+                    return data.get("lifetime_seconds", 0)
+            except:
+                return 0
+        return 0
+
+    def save_stats(self):
+        """Save lifetime stats to file"""
+        os.makedirs(DATA_PATH, exist_ok=True)
+        stats_file = os.path.join(DATA_PATH, "stats.json")
+        try:
+            with open(stats_file, 'w') as f:
+                json.dump({"lifetime_seconds": self.lifetime_seconds}, f)
+        except:
+            pass
 
     # --------------------------
     # Data Collection
@@ -617,6 +650,7 @@ class DataCollectorGUI:
         self.pause_btn.config(state=tk.DISABLED, text="⏸️ PAUSE", bg="#F39C12")
         self.stop_btn.config(state=tk.DISABLED)
         self.dropdown.config(state=tk.NORMAL)
+        self.save_stats()
 
     def create_folders(self, action):
         action_path = os.path.join(DATA_PATH, action)
