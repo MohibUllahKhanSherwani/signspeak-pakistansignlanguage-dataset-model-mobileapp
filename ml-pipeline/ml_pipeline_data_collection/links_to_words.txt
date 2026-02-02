@@ -7,11 +7,62 @@
 7. bring: https://psl.org.pk/dictionary/72-verbs/4871-bring
 8. airplane: https://psl.org.pk/dictionary/3-airport/162-airplane
 9. donttouch: https://psl.org.pk/dictionary/65-sentences/4297-don-t-touch !
-10. please: https://psl.org.pk/dictionary/65-sentences/4364-please
+10. fan: https://psl.org.pk/dictionary/10-around-the-house/415-fan
+11. bench: https://psl.org.pk/dictionary/10-around-the-house/406-bench
+12. haveagoodday: https://psl.org.pk/dictionary/81-kfc/6740-have-a-good-day!
+13. we: https://psl.org.pk/dictionary/63-pronouns/4123-we
+14. you: https://psl.org.pk/dictionary/63-pronouns/4124-you
+15. door: https://psl.org.pk/dictionary/10-around-the-house/412-door
+16. garden: https://psl.org.pk/dictionary/10-around-the-house/421-garden
+17. mine: https://psl.org.pk/dictionary/63-pronouns/4106-mine
+18. absolutely: https://psl.org.pk/dictionary/2-adverbs/209-absolutely
+19. all: https://psl.org.pk/dictionary/63-pronouns/4092-all
+20. both: https://psl.org.pk/dictionary/63-pronouns/4096-both
+21. mobilephone: https://psl.org.pk/dictionary/9-appliances/296-mobile-phone
+22. generator: https://psl.org.pk/dictionary/9-appliances/292-generator
+23. aircrash: https://psl.org.pk/dictionary/3-airport/161-air-crash
+24. goodmorning: https://psl.org.pk/dictionary/65-sentences/4303-good-morning
+25. welldone: https://psl.org.pk/dictionary/65-sentences/4381-well-done!
+26. ihaveacomplaint: https://psl.org.pk/dictionary/81-kfc/6741-i-have-an-complaint
+27. bear: https://psl.org.pk/dictionary/51-mammals/2847-bear
+28. cow: https://psl.org.pk/dictionary/51-mammals/2857-cow
+29. deer: https://psl.org.pk/dictionary/51-mammals/2859-deer
+30. chimpanzee: https://psl.org.pk/dictionary/51-mammals/2854-chimpanzee
+31. elephant: https://psl.org.pk/dictionary/51-mammals/2863-elephant
+32. dog: https://psl.org.pk/dictionary/51-mammals/2861-dog
+33. policecar: https://psl.org.pk/dictionary/70-transport/4706-police-car
+34. bicycle: https://psl.org.pk/dictionary/70-transport/4644-bicycle
+35. bridge: https://psl.org.pk/dictionary/70-transport/4646-bridge
 
-11. aircrash: https://psl.org.pk/dictionary/3-airport/161-air-crash  !
-12. airplanearrival: https://psl.org.pk/dictionary/3-airport/163-arrival
-13. goodmorning: https://psl.org.pk/dictionary/65-sentences/4303-good-morning
+https://psl.org.pk/dictionary/11-arts/435-cartoon
+https://psl.org.pk/dictionary/11-arts/439-colored-pencils
+19. eidmubarak: https://psl.org.pk/dictionary/65-sentences/4298-eid-mubarak
+https://psl.org.pk/dictionary/12-banking/576-atm-automated-teller-machine
+https://psl.org.pk/dictionary/13-bathroom/560-nail-cutter
+https://psl.org.pk/dictionary/13-bathroom/564-shampoo
+https://psl.org.pk/dictionary/13-bathroom/563-razor
+https://psl.org.pk/dictionary/13-bathroom/565-shower
+https://psl.org.pk/dictionary/13-bathroom/569-tissue-paper
+https://psl.org.pk/dictionary/13-bathroom/572-toothbrush
+https://psl.org.pk/dictionary/13-bathroom/573-toothpaste
+https://psl.org.pk/dictionary/14-beach/623-sunglasses
+https://psl.org.pk/dictionary/14-beach/609-beach
+https://psl.org.pk/dictionary/14-beach/612-life-jacket
+https://psl.org.pk/dictionary/15-beauty/631-bald
+https://psl.org.pk/dictionary/15-beauty/633-beard
+https://psl.org.pk/dictionary/15-beauty/650-face-lotion
+https://psl.org.pk/dictionary/2-adverbs/212-also
+https://psl.org.pk/dictionary/16-bedroom/717-bed
+https://psl.org.pk/dictionary/16-bedroom/718-bedroom
+https://psl.org.pk/dictionary/16-bedroom/725-cupboard
+https://psl.org.pk/dictionary/17-birds/740-bird
+https://psl.org.pk/dictionary/17-birds/739-beak
+https://psl.org.pk/dictionary/17-birds/742-crow
+https://psl.org.pk/dictionary/17-birds/763-penguin
+https://psl.org.pk/dictionary/3-airport/163-arrival
+https://psl.org.pk/dictionary/3-airport/171-conveyor-belt
+
+
 14. goodnight: https://psl.org.pk/dictionary/65-sentences/4304-good-night
 
 
@@ -22,15 +73,17 @@
 17. seeyoulater: https://psl.org.pk/dictionary/65-sentences/4365-see-you-later!
 18. walaikumassalam: https://psl.org.pk/dictionary/65-sentences/4379-walaikum-as-salaam
 19. welcome: https://psl.org.pk/dictionary/65-sentences/4380-welcome
-20. we: https://psl.org.pk/dictionary/63-pronouns/4123-we
-21. you: https://psl.org.pk/dictionary/63-pronouns/4124-you
-22. welldone: https://psl.org.pk/dictionary/65-sentences/4381-well-done!
+
+
+
 23. comehere: https://psl.org.pk/dictionary/65-sentences/4276-come-here!
-24. haveagoodday: https://psl.org.pk/dictionary/81-kfc/6740-have-a-good-day!
-25. ihaveacomplaint: https://psl.org.pk/dictionary/81-kfc/6741-i-have-an-complaint
-26. absolutely: https://psl.org.pk/dictionary/2-adverbs/209-absolutely
+
+
 27. also: https://psl.org.pk/dictionary/2-adverbs/212-also
-28. door: https://psl.org.pk/dictionary/10-around-the-house/412-door
-29. bench: https://psl.org.pk/dictionary/10-around-the-house/406-bench
-30. fan: https://psl.org.pk/dictionary/10-around-the-house/415-fan
+
+
+
 31. 
+
+
+10. please: https://psl.org.pk/dictionary/65-sentences/4364-please (very similar to excuseme)
