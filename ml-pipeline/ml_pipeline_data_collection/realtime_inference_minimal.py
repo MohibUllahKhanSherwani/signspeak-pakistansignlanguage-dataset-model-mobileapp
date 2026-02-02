@@ -42,7 +42,7 @@ def main():
     current_confidence = 0.0
     
     cap = cv2.VideoCapture(0)
-    with mp.solutions.holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+    with mp.solutions.holistic.Holistic(min_detection_confidence=0.4, min_tracking_confidence=0.4) as holistic:
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret: break
@@ -73,8 +73,8 @@ def main():
                 predictions.append(prediction_idx)
                 if len(predictions) > 10: predictions.pop(0)
 
-                # Logic for sentence construction (Higher stability: > 5 matches required)
-                if confidence > PREDICTION_THRESHOLD and predictions.count(prediction_idx) > 5:
+                # Higher stability: > 8 matches required in the last 10 predictions
+                if confidence > PREDICTION_THRESHOLD and predictions.count(prediction_idx) > 8:
                     # Don't add "nothing" to the sentence
                     if action != "nothing":
                         if not sentence or sentence[-1] != action:
@@ -122,11 +122,12 @@ def main():
             cv2.putText(image, "[Q] Quit | [C] Clear History", (sidebar_width + 20, h - 20),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
 
-            # --- UPSCALED DISPLAY ---
-            # Resize by 1.5x for better visibility on high-res screens
-            large_frame = cv2.resize(image, (int(w * 1.5), int(h * 1.5)))
+            # --- DISPLAY ---
+            # Create a named window that can be resized
+            cv2.namedWindow('SignSpeak - Pro History Mode', cv2.WINDOW_NORMAL)
+            cv2.resizeWindow('SignSpeak - Pro History Mode', 1000, 750)
             
-            cv2.imshow('SignSpeak - Pro History Mode', large_frame)
+            cv2.imshow('SignSpeak - Pro History Mode', image)
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
                 break

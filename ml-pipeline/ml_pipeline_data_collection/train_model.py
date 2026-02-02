@@ -10,6 +10,8 @@ from sklearn.preprocessing import LabelEncoder
 import joblib
 
 from actions_config import load_actions, DATA_PATH, SEQUENCE_LENGTH, NUM_SEQUENCES, BATCH_SIZE, EPOCHS, LEARNING_RATE
+from training_logger import log_training_session
+import time
 
 def load_data(actions):
     sequences, labels = [], []
@@ -57,11 +59,25 @@ def main():
     model = build_model(input_shape, y_cat.shape[1])
     model.summary()
     # Train
-    model.fit(X_train, y_train, epochs=EPOCHS, batch_size=BATCH_SIZE, validation_data=(X_test, y_test))
+    start_time = time.time()
+    history = model.fit(X_train, y_train, epochs=EPOCHS, batch_size=BATCH_SIZE, validation_data=(X_test, y_test))
+    training_duration = time.time() - start_time
     # Save model and label encoder
     model.save("action_model.h5")
     joblib.dump(le, "label_encoder.pkl")
     print("Training complete. Model saved to action_model.h5 and label_encoder.pkl")
+
+    # Log the session
+    log_training_session(
+        duration_seconds=training_duration,
+        num_words=len(actions),
+        training_acc=history.history['accuracy'][-1],
+        val_acc=history.history['val_accuracy'][-1],
+        epochs=EPOCHS,
+        batch_size=BATCH_SIZE,
+        augmented=False,
+        model_path="action_model.h5"
+    )
 
 if __name__ == "__main__":
     main()

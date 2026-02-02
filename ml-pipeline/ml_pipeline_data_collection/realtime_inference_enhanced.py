@@ -227,7 +227,7 @@ def main():
     
     cap = cv2.VideoCapture(0)
     
-    with mp.solutions.holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+    with mp.solutions.holistic.Holistic(min_detection_confidence=0.4, min_tracking_confidence=0.4) as holistic:
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -268,8 +268,8 @@ def main():
                 if len(predictions) > 10:
                     predictions.pop(0)
                 
-                # Only accept if stable and above threshold
-                if confidence >= PREDICTION_THRESHOLD and predictions.count(predicted_index) > 6:
+                # Only accept if stable and above threshold (8/10 matches)
+                if confidence >= PREDICTION_THRESHOLD and predictions.count(predicted_index) > 8:
                     if len(sentence) == 0 or sentence[-1] != predicted_action:
                         sentence.append(predicted_action)
                         last_prediction = predicted_action
@@ -299,6 +299,8 @@ def main():
                 cv2.putText(image, sentence_text, (10, image.shape[0] - 15),
                            cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 0), 2)
             
+            cv2.namedWindow(f'SignSpeak - {model_name} Model', cv2.WINDOW_NORMAL)
+            cv2.resizeWindow(f'SignSpeak - {model_name} Model', 1000, 750)
             cv2.imshow(f'SignSpeak - {model_name} Model', image)
             
             # Keyboard controls

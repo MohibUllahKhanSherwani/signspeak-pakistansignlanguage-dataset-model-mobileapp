@@ -551,15 +551,15 @@ class DataCollectorGUI:
             self.reset_ui_after_collection()
             return
 
-        with mp.solutions.holistic.Holistic(min_detection_confidence=0.5,
-                                  min_tracking_confidence=0.5) as holistic:
+        with mp.solutions.holistic.Holistic(min_detection_confidence=0.4,
+                                  min_tracking_confidence=0.4) as holistic:
 
             for seq in range(start_seq, NUM_SEQUENCES):
                 if self.stop_flag:
                     break
 
-                # Countdown with beeps
-                for i in range(3, 0, -1):
+                # Faster Countdown (1 second)
+                for i in range(1, 0, -1):
                     if self.stop_flag:
                         break
                         

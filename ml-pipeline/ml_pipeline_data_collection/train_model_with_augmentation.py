@@ -26,6 +26,8 @@ from actions_config import (
     NUM_SEQUENCES, BATCH_SIZE, EPOCHS, LEARNING_RATE, AUGMENTATION_MULTIPLIER
 )
 from data_augmentation import create_augmented_dataset
+from training_logger import log_training_session
+import time
 
 
 def load_data(actions):
@@ -220,6 +222,7 @@ def main():
     print(f"\n🚀 Starting training for {args.epochs} epochs...")
     print("=" * 60)
     
+    start_time = time.time()
     history = model.fit(
         X_train, y_train,
         epochs=args.epochs,
@@ -228,6 +231,7 @@ def main():
         callbacks=callbacks,
         verbose=1
     )
+    training_duration = time.time() - start_time
     
     # Save final model
     model.save("action_model.h5")
@@ -249,6 +253,18 @@ def main():
     print(f"   • action_model.h5 (final model)")
     print(f"   • best_action_model.h5 (best model during training)")
     print(f"   • label_encoder.pkl")
+    
+    # Log the session
+    log_training_session(
+        duration_seconds=training_duration,
+        num_words=len(actions),
+        training_acc=final_train_acc,
+        val_acc=final_val_acc,
+        epochs=len(history.history['accuracy']), # actual epochs run if early stopping triggered
+        batch_size=BATCH_SIZE,
+        augmented=args.augment,
+        model_path="action_model.h5"
+    )
     
     # Tips
     print(f"\n💡 Tips:")

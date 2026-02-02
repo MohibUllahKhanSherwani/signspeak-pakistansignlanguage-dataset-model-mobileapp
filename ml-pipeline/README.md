@@ -544,7 +544,13 @@ During development, several technical challenges were identified and solved to e
 *   **Solution**: Implemented **Conditional Mirroring Masks**. The augmentation script now detects if a hand is missing and ensures it remains as a perfect zero-vector even after spatial flipping.
 *   **Result**: Force-focuses the model on the active hand while ignoring the background, significantly reducing noise for single-handed PSL signs.
 
+### 7. Motion Blur & Landmark Dropouts (The "Fast Sign" Problem)
+*   **Problem**: Fast movements like waving caused landmarks to vanish. Built-in laptop cameras with internal software delays (20 FPS cap) created excessive motion blur that MediaPipe couldn't resolve during rapid sign execution.
+*   **Solution**: Unlocked full camera frame rate by reducing `FRAME_WAIT_MS` to **1ms**. Lowered detection/tracking thresholds to **0.4** and implemented a stricter **High-Stability Filter** (requiring 9/10 consistent hits).
+*   **Result**: Eliminated "Landmark Flicker" during high-speed transitions and improved tracking reliability on lower-end laptop webcams.
+
 ---
+
 
 ## 🔄 Recent Updates (Jan 29, 2026)
 
@@ -581,6 +587,19 @@ During development, several technical challenges were identified and solved to e
 
 ---
 
-**Version**: 1.2.1  
-**Last Updated**: Jan 30, 2026  
+---
+
+## 🔄 Recent Updates (Jan 31, 2026)
+
+### 1. Performance & Stability Calibration
+- **FPS Bottleneck Fixed**: Reduced internal loop delay in `actions_config.py` from 50ms to 1ms, increasing capture rate from ~12 FPS to the camera's theoretical maximum (~30 FPS).
+- **Enhanced Detection Sensitivity**: Adjusted MediaPipe `min_detection_confidence` to 0.4 to better handle motion-blurred hands during complex signs.
+- **Workflow Automation**: Fully automated `compare_models.py` by removing manual interaction, enabling continuous pipeline execution.
+- **Transition Noise Suppression**: Increased stability requirements (9/10 frame consistency) and raised `PREDICTION_THRESHOLD` to 0.8 to eliminate phantom predictions during hand transitions.
+- **UI Scaling Fix**: Replaced fixed 1.5x upscaling in inference with resizable `WINDOW_NORMAL` (1000x750 default) to fix "zoomed-in" appearance.
+
+---
+
+**Version**: 1.2.2  
+**Last Updated**: Jan 31, 2026  
 **Python**: 3.9+ (3.11 recommended)  
