@@ -17,6 +17,8 @@ from actions_config import load_actions, DATA_PATH, SEQUENCE_LENGTH, AUGMENTATIO
 from train_model import load_data as load_data_simple, build_model as build_model_simple
 from train_model_with_augmentation import load_data, build_model
 from data_augmentation import create_augmented_dataset
+from training_logger import log_training_session, log_comparison_session
+import time
 
 from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
@@ -71,6 +73,7 @@ def train_and_evaluate(actions, use_augmentation=False, augment_multiplier=3):
     
     # Train
     print("\nTraining...")
+    start_time = time.time()
     history = model.fit(
         X_train, y_train,
         epochs=EPOCHS,  # Use config epochs
@@ -78,6 +81,7 @@ def train_and_evaluate(actions, use_augmentation=False, augment_multiplier=3):
         validation_data=(X_test, y_test),
         verbose=1
     )
+    training_duration = time.time() - start_time
     
     # Evaluate
     print("\nEvaluating...")
@@ -108,6 +112,18 @@ def train_and_evaluate(actions, use_augmentation=False, augment_multiplier=3):
     
     print(f"\n✅ Saved: {model_name}, {encoder_name}")
     
+    # Log the session
+    log_training_session(
+        duration_seconds=training_duration,
+        num_words=len(actions),
+        training_acc=train_acc,
+        val_acc=test_acc,
+        epochs=len(history.history['accuracy']),
+        batch_size=16,
+        augmented=use_augmentation,
+        model_path=model_name
+    )
+    
     return {
         'mode': mode,
         'use_augmentation': use_augmentation,
@@ -128,7 +144,8 @@ def train_and_evaluate(actions, use_augmentation=False, augment_multiplier=3):
             'val_acc': [float(x) for x in history.history['val_accuracy']],
             'train_loss': [float(x) for x in history.history['loss']],
             'val_loss': [float(x) for x in history.history['val_loss']],
-        }
+        },
+        'training_duration': training_duration
     }
 
 
@@ -232,6 +249,7 @@ def compare_models(baseline_results, augmented_results):
 
 
 def main():
+    total_start_time = time.time()
     print("=" * 70)
     print("MODEL COMPARISON: Baseline vs Augmented")
     print("=" * 70)
@@ -240,13 +258,13 @@ def main():
     actions = load_actions()
     print(f"\nActions: {', '.join(actions)}")
     
-    input("\nPress Enter to start training (this will take time)...")
+    print("\nStarting training (this will take time)...")
     
     # Train baseline model
     baseline_results = train_and_evaluate(actions, use_augmentation=False)
     
     print("\n" + "~" * 70)
-    input("Baseline done! Press Enter to train augmented model...")
+    print("Baseline done! Moving to augmented model training...")
     
     # Train augmented model
     augmented_results = train_and_evaluate(actions, use_augmentation=True, augment_multiplier=AUGMENTATION_MULTIPLIER)
@@ -259,16 +277,35 @@ def main():
     os.makedirs(report_dir, exist_ok=True)
     report_file = os.path.join(report_dir, f"comparison_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
     
+    total_duration = time.time() - total_start_time
+    comparison['total_execution_time_seconds'] = total_duration
+    
     with open(report_file, 'w') as f:
         json.dump(comparison, f, indent=2)
     
     print(f"\n💾 Detailed report saved to: {report_file}")
-    print("\n✅ Comparison complete!")
-    print("\n📊 Next Steps:")
-    print("   1. Review the comparison above")
-    print("   2. Test both models locally with realtime_inference.py")
-    print("   3. Deploy best model to backend for mobile integration")
-
+    
+    # Record total comparison time
+    log_comparison_session(
+        total_duration=total_duration,
+        baseline_duration=baseline_results['training_duration'],
+        augmented_duration=augmented_results['training_duration'],
+        num_words=len(actions),
+        baseline_acc=baseline_results['test_accuracy'],
+        augmented_acc=augmented_results['test_accuracy']
+    )
+    
+    mins = int(total_duration // 60)
+    secs = int(total_duration % 60)
+    print(f"⏱️  Total Session Time: {mins}m {secs}s")
+    
+    # Print breakdown
+    b_min, b_sec = int(baseline_results['training_duration'] // 60), int(baseline_results['training_duration'] % 60)
+    a_min, a_sec = int(augmented_results['training_duration'] // 60), int(augmented_results['training_duration'] % 60)
+    print(f"   • Baseline Training: {b_min}m {b_sec}s")
+    print(f"   • Augmented Training: {a_min}m {a_sec}s")
+    
+    print("\n Comparison complete!")
 
 if __name__ == "__main__":
     main()

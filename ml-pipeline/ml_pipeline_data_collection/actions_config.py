@@ -12,7 +12,7 @@ DATA_PATH = os.path.join(config_dir, "MP_Data")
 # Recording params
 SEQUENCE_LENGTH = 60          # number of frames per sequence (2.0 seconds)
 NUM_SEQUENCES = 50            # how many sequences per action (50 is sufficient with augmentation)
-FRAME_WAIT_MS = 50           # delay between frames during collection
+FRAME_WAIT_MS = 1           # delay between frames during collection (1ms allows max speed)
 
 # Model params
 BATCH_SIZE = 16
@@ -20,7 +20,7 @@ EPOCHS = 200
 LEARNING_RATE = 0.001
 
 # Inference params
-PREDICTION_THRESHOLD = 0.5
+PREDICTION_THRESHOLD = 0.8        # Increased to ignore 'weak' wrong guesses during transitions
 
 # Augmentation params
 USE_AUGMENTATION = True          # Enable/disable augmentation
