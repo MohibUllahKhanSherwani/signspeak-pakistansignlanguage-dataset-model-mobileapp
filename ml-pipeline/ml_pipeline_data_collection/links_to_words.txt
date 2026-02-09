@@ -33,35 +33,36 @@
 33. policecar: https://psl.org.pk/dictionary/70-transport/4706-police-car
 34. bicycle: https://psl.org.pk/dictionary/70-transport/4644-bicycle
 35. bridge: https://psl.org.pk/dictionary/70-transport/4646-bridge
+36. cartoon: https://psl.org.pk/dictionary/11-arts/435-cartoon
+37. coloredpencils: https://psl.org.pk/dictionary/11-arts/439-colored-pencils
+38. atm: https://psl.org.pk/dictionary/12-banking/576-atm-automated-teller-machine
+39. nailcutter: https://psl.org.pk/dictionary/13-bathroom/560-nail-cutter
+40. shampoo: https://psl.org.pk/dictionary/13-bathroom/564-shampoo
+41. razor: https://psl.org.pk/dictionary/13-bathroom/563-razor
+42. shower: https://psl.org.pk/dictionary/13-bathroom/565-shower
+43. tissuepaper: https://psl.org.pk/dictionary/13-bathroom/569-tissue-paper
+44. toothbrush: https://psl.org.pk/dictionary/13-bathroom/572-toothbrush
+45. toothpaste: https://psl.org.pk/dictionary/13-bathroom/573-toothpaste
+46. sunglasses: https://psl.org.pk/dictionary/14-beach/623-sunglasses
+47. beach: https://psl.org.pk/dictionary/14-beach/609-beach
+48. lifejacket: https://psl.org.pk/dictionary/14-beach/612-life-jacket
+49. bald: https://psl.org.pk/dictionary/15-beauty/631-bald
+50. beard: https://psl.org.pk/dictionary/15-beauty/633-beard
+51. facelotion: https://psl.org.pk/dictionary/15-beauty/650-face-lotion
+52. also: https://psl.org.pk/dictionary/2-adverbs/212-also
+53. bed: https://psl.org.pk/dictionary/16-bedroom/717-bed
+54. cupboard: https://psl.org.pk/dictionary/16-bedroom/725-cupboard
+55. beak: https://psl.org.pk/dictionary/17-birds/739-beak
+56. crow: https://psl.org.pk/dictionary/17-birds/742-crow
+57. peacock: https://psl.org.pk/dictionary/17-birds/761-peacock
+58. arrival: https://psl.org.pk/dictionary/3-airport/163-arrival
+59. umbrella: https://psl.org.pk/dictionary/14-beach/628-umbrella
 
-https://psl.org.pk/dictionary/11-arts/435-cartoon
-https://psl.org.pk/dictionary/11-arts/439-colored-pencils
-19. eidmubarak: https://psl.org.pk/dictionary/65-sentences/4298-eid-mubarak
-https://psl.org.pk/dictionary/12-banking/576-atm-automated-teller-machine
-https://psl.org.pk/dictionary/13-bathroom/560-nail-cutter
-https://psl.org.pk/dictionary/13-bathroom/564-shampoo
-https://psl.org.pk/dictionary/13-bathroom/563-razor
-https://psl.org.pk/dictionary/13-bathroom/565-shower
-https://psl.org.pk/dictionary/13-bathroom/569-tissue-paper
-https://psl.org.pk/dictionary/13-bathroom/572-toothbrush
-https://psl.org.pk/dictionary/13-bathroom/573-toothpaste
-https://psl.org.pk/dictionary/14-beach/623-sunglasses
-https://psl.org.pk/dictionary/14-beach/609-beach
-https://psl.org.pk/dictionary/14-beach/612-life-jacket
-https://psl.org.pk/dictionary/15-beauty/631-bald
-https://psl.org.pk/dictionary/15-beauty/633-beard
-https://psl.org.pk/dictionary/15-beauty/650-face-lotion
-https://psl.org.pk/dictionary/2-adverbs/212-also
-https://psl.org.pk/dictionary/16-bedroom/717-bed
+
 https://psl.org.pk/dictionary/16-bedroom/718-bedroom
-https://psl.org.pk/dictionary/16-bedroom/725-cupboard
-https://psl.org.pk/dictionary/17-birds/740-bird
-https://psl.org.pk/dictionary/17-birds/739-beak
-https://psl.org.pk/dictionary/17-birds/742-crow
 https://psl.org.pk/dictionary/17-birds/763-penguin
-https://psl.org.pk/dictionary/3-airport/163-arrival
 https://psl.org.pk/dictionary/3-airport/171-conveyor-belt
-
+https://psl.org.pk/dictionary/14-beach/627-tide
 
 14. goodnight: https://psl.org.pk/dictionary/65-sentences/4304-good-night
 
