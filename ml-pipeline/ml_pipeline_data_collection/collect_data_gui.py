@@ -537,12 +537,21 @@ class DataCollectorGUI:
 
         self.create_folders(action)
 
-        # Count how many sequences are done
-        start_seq = self.count_sequences(action)
-
+        sequences_to_collect = self.get_missing_sequences(action)
+        if not sequences_to_collect:
+            messagebox.showinfo("Complete", f"All {NUM_SEQUENCES} sequences already recorded for {action}")
+            self.reset_ui_after_collection()
+            return
         total = NUM_SEQUENCES
+        completed_count = NUM_SEQUENCES - len(sequences_to_collect)
         self.progress["maximum"] = total
-        self.progress["value"] = start_seq
+        self.progress["value"] = completed_count
+        # Count how many sequences are done
+        # start_seq = self.count_sequences(action)
+
+        # total = NUM_SEQUENCES
+        # self.progress["maximum"] = total
+        # self.progress["value"] = start_seq
 
         cap = cv2.VideoCapture(0)
         
@@ -554,7 +563,7 @@ class DataCollectorGUI:
         with mp.solutions.holistic.Holistic(min_detection_confidence=0.4,
                                   min_tracking_confidence=0.4) as holistic:
 
-            for seq in range(start_seq, NUM_SEQUENCES):
+            for seq in sequences_to_collect:
                 if self.stop_flag:
                     break
 
@@ -655,6 +664,26 @@ class DataCollectorGUI:
     def create_folders(self, action):
         action_path = os.path.join(DATA_PATH, action)
         os.makedirs(action_path, exist_ok=True)
+    def get_missing_sequences(self, action):
+        """Find which sequences are missing for the given data (from 
+        0 to NUM_SEQUENCES)"""
+        folder = os.path.join(DATA_PATH, action)
+        # meaning all sequences are missing
+        if not os.path.exists(folder):
+            return list(range(NUM_SEQUENCES)) # Return 50
+            
+        # get existing folders
+        existing = set()
+        for seq in os.listdir(folder):
+            if seq.isdigit():
+                existing.add(int(seq))
+                
+        #Find which are missing
+        missing = []
+        for i in range(NUM_SEQUENCES):
+            if i not in existing:
+                missing.append(i)
+        return sorted(missing)
 
 
 if __name__ == "__main__":
