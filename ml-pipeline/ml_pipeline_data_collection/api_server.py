@@ -42,6 +42,15 @@ async def predict(data: SequenceData):
         raise HTTPException(status_code=500, detail="Model or encoder not loaded")
     # 1. convert intput to np arr
     sequence = np.array(data.landmarks)
+    
+    # DEBUG: Save request data to file for comparison
+    try:
+        np.save("debug_flutter_data.npy", sequence)
+        print(f"DEBUG: Saved request data to debug_flutter_data.npy. Shape: {sequence.shape}")
+        if len(sequence) > 0:
+            print(f"DEBUG Sample (Frame 0, LH Wrist): {sequence[0, :3]}")
+    except Exception as e:
+        print(f"DEBUG Error saving data: {e}")
 
     # 2. validate shape (excpected is (30, 126))
     expected_shape = (SEQUENCE_LENGTH, 126)
