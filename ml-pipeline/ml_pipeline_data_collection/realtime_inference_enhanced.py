@@ -321,6 +321,19 @@ def main():
             elif key == ord('x') and last_prediction:
                 # Mark wrong (don't increment correct)
                 print(f"❌ Marked '{last_prediction}' as WRONG ({correct_predictions}/{total_predictions})")
+            elif key == ord('s'):
+                # Save current sequence for debugging
+                debug_seq = np.array(sequence)
+                np.save("debug_python_data.npy", debug_seq)
+                print(f"💾 Saved current sequence to debug_python_data.npy. Shape: {debug_seq.shape}")
+                if len(debug_seq) > 0 and len(debug_seq[0]) > 0:
+                    print(f"Sample (Frame 0, LH Wrist): {debug_seq[0, :3]}")
+            elif key == ord('s'):
+                # Save current sequence for debugging
+                debug_seq = np.array(sequence)
+                np.save("debug_python_data.npy", debug_seq)
+                print(f"💾 Saved current sequence to debug_python_data.npy. Shape: {debug_seq.shape}")
+                print(f"Sample (Frame 0, LH Wrist): {debug_seq[0, :3]}")
     
     cap.release()
     cv2.destroyAllWindows()
