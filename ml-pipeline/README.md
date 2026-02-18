@@ -1,5 +1,13 @@
 # SignSpeak Data Collection Module
 
+<div align="center">
+  <h3>
+    <a href="README.md">🏠 Home</a> &nbsp;&nbsp; | &nbsp;&nbsp; 
+    <a href="PHASE_0_SKEPTICISM.md">🎯 Phase 0: Systems Mindset</a>
+  </h3>
+</div>
+<hr />
+
 [![Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue.svg)](https://www.python.org/downloads/)
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15.0-orange.svg)](https://www.tensorflow.org/)
 
@@ -9,6 +17,7 @@ python -m uvicorn api_server:app --host 0.0.0.0 --port 8000
 ## 📋 Table of Contents
 
 - [Overview](#overview)
+- [Phase 0: Systems Mindset](#phase-0-systems-mindset)
 - [Features](#features)
 - [System Requirements](#system-requirements)
 - [Installation](#installation)
@@ -32,6 +41,16 @@ SignSpeak is part of a larger Final Year Project (FYP) at COMSATS University Isl
 - **Inference**: Real-time sign recognition using hand landmarks
 
 **Note**: This is the ML data collection and training module. The complete SignSpeak system includes a Flutter mobile app and FastAPI backend (developed separately).
+
+---
+
+## 🎯 Phase 0: Systems Mindset
+
+As part of the engineering discipline for this project, we adhere to the **Systems Mindset & LLM Skepticism** principles.
+
+👉 **[Read Phase 0 Documentation](PHASE_0_SKEPTICISM.md)**
+
+This document covers the difference between deterministic and probabilistic systems, the tool selection ladder, and reliability engineering for AI pipelines.
 
 ---
 

@@ -5,3 +5,6 @@ __pycache__/
 .env
 .vscode/
 .idea/
+
+SDD/
+SRS/

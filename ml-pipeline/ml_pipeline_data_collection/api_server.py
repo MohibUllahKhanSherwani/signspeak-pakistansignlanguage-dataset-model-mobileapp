@@ -78,5 +78,51 @@ async def predict(data: SequenceData):
 def health_check():
     return {"status": "ok"}
 
+@app.post("/debug-echo")
+async def debug_echo(data: SequenceData):
+    """Echo back tensor statistics for parity validation.
+    
+    Use this endpoint to verify that Flutter preprocessed landmarks
+    match the expected value ranges from Python real-time inference.
+    """
+    sequence = np.array(data.landmarks)
+    
+    if sequence.shape != (SEQUENCE_LENGTH, 126):
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid shape. Expected ({SEQUENCE_LENGTH}, 126), got {sequence.shape}"
+        )
+    
+    lh = sequence[:, :63]   # Left hand columns
+    rh = sequence[:, 63:]   # Right hand columns
+    
+    # Check if hand is present (non-zero)
+    lh_present = np.any(lh != 0)
+    rh_present = np.any(rh != 0)
+    
+    return {
+        "shape": list(sequence.shape),
+        "left_hand": {
+            "present": bool(lh_present),
+            "min": float(lh.min()) if lh_present else 0.0,
+            "max": float(lh.max()) if lh_present else 0.0,
+            "mean": float(lh.mean()) if lh_present else 0.0,
+            "wrist_xyz_frame0": lh[0, :3].tolist(),
+        },
+        "right_hand": {
+            "present": bool(rh_present),
+            "min": float(rh.min()) if rh_present else 0.0,
+            "max": float(rh.max()) if rh_present else 0.0,
+            "mean": float(rh.mean()) if rh_present else 0.0,
+            "wrist_xyz_frame0": rh[0, :3].tolist(),
+        },
+        "x_value_ranges": {
+            "lh_x_min": float(lh[:, 0::3].min()) if lh_present else 0.0,
+            "lh_x_max": float(lh[:, 0::3].max()) if lh_present else 0.0,
+            "rh_x_min": float(rh[:, 0::3].min()) if rh_present else 0.0,
+            "rh_x_max": float(rh[:, 0::3].max()) if rh_present else 0.0,
+        }
+    }
+
 
     
