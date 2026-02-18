@@ -2,7 +2,7 @@ import 'dart:collection';
 
 /// Manages a sliding window buffer of hand landmarks for sign language recognition.
 /// 
-/// The buffer maintains exactly 30 frames of landmark data. Each frame contains
+/// The buffer maintains exactly 60 frames of landmark data. Each frame contains
 /// 126 float values representing:
 /// - Positions 0-62: Left Hand landmarks (21 points × 3 coordinates: x, y, z)
 /// - Positions 63-125: Right Hand landmarks (21 points × 3 coordinates: x, y, z)
@@ -41,22 +41,22 @@ class LandmarkManager {
     // Add to buffer
     _buffer.add(frame);
 
-    // Maintain buffer size at 30 frames
+    // Maintain buffer size at 60 frames
     if (_buffer.length > _bufferSize) {
       _buffer.removeFirst();
     }
   }
 
-  /// Returns true if the buffer is full (contains 30 frames).
+  /// Returns true if the buffer is full (contains 60 frames).
   bool get isBufferFull => _buffer.length == _bufferSize;
 
   /// Returns the current number of frames in the buffer.
   int get currentFrameCount => _buffer.length;
 
-  /// Gets the complete 30-frame buffer as a list of lists.
+  /// Gets the complete 60-frame buffer as a list of lists.
   /// 
   /// Returns null if the buffer is not yet full.
-  /// Format: [[frame1 (126 values)], [frame2 (126 values)], ..., [frame30 (126 values)]]
+  /// Format: [[frame1 (126 values)], [frame2 (126 values)], ..., [frame60 (126 values)]]
   List<List<double>>? getBuffer() {
     if (!isBufferFull) {
       return null;

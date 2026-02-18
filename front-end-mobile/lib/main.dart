@@ -150,37 +150,25 @@ class _SignLanguageRecognitionScreenState
         for (final hand in hands) {
           final flatLandmarks = <double>[];
           for (final point in hand.landmarks) {
-            flatLandmarks.add(point.x);
+            // MIRROR X-AXIS: Front camera raw frames are horizontally flipped
+            // compared to the rear webcam used during Python training.
+            // Applying 1.0 - x converts to rear-camera-equivalent coordinates.
+            flatLandmarks.add(1.0 - point.x);
             flatLandmarks.add(point.y);
             flatLandmarks.add(point.z);
           }
 
-          // Simple heuristic for handedness if label isn't available:
-          // In mirrored front camera, left side of screen is right hand? 
-          // Use hand.label if available, otherwise just assign.
-          // Note: hand_landmarker Hand object usually has a 'label' or 'handedness'.
-          // Trying 'label' property. If it fails, we fall back to index?
-          // To implement safely without crashing on property access, I'll rely on dynamic or known properties.
-          // Since I can't check, I'll use try-catch for label or assume 'Left'/'Right'.
-          
-          // Assuming 'type' or 'label' exists.
-          // The user's code `List<Hand> _landmarks` and painter just iterates.
-          // I will assume 'type' property simply because it's common.
-          // If compile fails, I'll fix.
-          // Use the label from the HandLandmarker plugin to determine handedness.
-          // This is much more reliable than checking x-coordinates.
-          // MediaPipe usually returns 'Left' or 'Right'.
-            // FALLBACK: The hand_landmarker package does NOT support handedness labels.
-            // We must use a heuristic approach.
-            // REVISED LOGIC: Raw Camera Sensor (Front) is usually NOT mirrored.
-            // - User's Right Hand is on Camera's Left (x < 0.5)
-            // - User's Left Hand is on Camera's Right (x > 0.5)
+          // hand_landmarker v2.2.0 does NOT expose handedness labels.
+          // Use wrist X heuristic on MIRRORED coordinates (rear-camera convention):
+          //   correctedWristX < 0.5 → left side of rear-cam frame → user's LEFT hand
+          //   correctedWristX >= 0.5 → right side of rear-cam frame → user's RIGHT hand
+          // This matches how MediaPipe Holistic classifies hands during Python training.
+          final correctedWristX = 1.0 - hand.landmarks[0].x;
+          String estimatedLabel = correctedWristX < 0.5 ? 'Left' : 'Right';
             
-            final wristX = hand.landmarks[0].x;
-            String estimatedLabel = wristX < 0.5 ? 'Right' : 'Left';
-            
-            // DEBUG: Update overlay
-            final info = 'Hand: $estimatedLabel (Est)\nWrist X: ${wristX.toStringAsFixed(2)}';
+            // DEBUG: Update overlay with both raw and corrected values
+            final rawX = hand.landmarks[0].x;
+            final info = 'Hand: $estimatedLabel\nRaw X: ${rawX.toStringAsFixed(3)} → Corrected: ${correctedWristX.toStringAsFixed(3)}';
             print(info); // Keep console log
             context.read<AppState>().updateDebugInfo(info);
             

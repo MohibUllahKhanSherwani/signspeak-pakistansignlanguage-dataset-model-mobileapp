@@ -28,34 +28,34 @@ void main() {
       expect(manager.isBufferFull, false);
     });
 
-    test('Buffer should be full after 30 frames', () {
+    test('Buffer should be full after 60 frames', () {
       final leftHand = List<double>.filled(63, 1.0);
       final rightHand = List<double>.filled(63, 2.0);
 
-      for (int i = 0; i < 30; i++) {
+      for (int i = 0; i < 60; i++) {
         manager.addFrame(
           leftHandLandmarks: leftHand,
           rightHandLandmarks: rightHand,
         );
       }
 
-      expect(manager.currentFrameCount, 30);
+      expect(manager.currentFrameCount, 60);
       expect(manager.isBufferFull, true);
     });
 
-    test('Buffer should maintain exactly 30 frames', () {
+    test('Buffer should maintain exactly 60 frames', () {
       final leftHand = List<double>.filled(63, 1.0);
       final rightHand = List<double>.filled(63, 2.0);
 
-      // Add 35 frames
-      for (int i = 0; i < 35; i++) {
+      // Add 65 frames
+      for (int i = 0; i < 65; i++) {
         manager.addFrame(
           leftHandLandmarks: leftHand,
           rightHandLandmarks: rightHand,
         );
       }
 
-      expect(manager.currentFrameCount, 30);
+      expect(manager.currentFrameCount, 60);
       expect(manager.isBufferFull, true);
     });
 
@@ -63,7 +63,7 @@ void main() {
       final leftHand = List<double>.filled(63, 1.0);
       final rightHand = List<double>.filled(63, 2.0);
 
-      for (int i = 0; i < 30; i++) {
+      for (int i = 0; i < 60; i++) {
         manager.addFrame(
           leftHandLandmarks: leftHand,
           rightHandLandmarks: rightHand,
@@ -72,7 +72,7 @@ void main() {
 
       final buffer = manager.getBuffer();
       expect(buffer, isNotNull);
-      expect(buffer!.length, 30);
+      expect(buffer!.length, 60);
       
       for (final frame in buffer) {
         expect(frame.length, 126);
@@ -87,7 +87,7 @@ void main() {
         rightHandLandmarks: rightHand,
       );
 
-      for (int i = 1; i < 30; i++) {
+      for (int i = 1; i < 60; i++) {
         manager.addFrame(
           leftHandLandmarks: List<double>.filled(63, 1.0),
           rightHandLandmarks: rightHand,
@@ -117,7 +117,7 @@ void main() {
         rightHandLandmarks: null,
       );
 
-      for (int i = 1; i < 30; i++) {
+      for (int i = 1; i < 60; i++) {
         manager.addFrame(
           leftHandLandmarks: leftHand,
           rightHandLandmarks: List<double>.filled(63, 2.0),
@@ -143,7 +143,7 @@ void main() {
       final leftHand = List<double>.filled(63, 1.0);
       final rightHand = List<double>.filled(63, 2.0);
 
-      for (int i = 0; i < 30; i++) {
+      for (int i = 0; i < 60; i++) {
         manager.addFrame(
           leftHandLandmarks: leftHand,
           rightHandLandmarks: rightHand,
@@ -164,7 +164,7 @@ void main() {
       
       expect(stats['bufferSize'], 0);
       expect(stats['isFull'], false);
-      expect(stats['totalFrames'], 30);
+      expect(stats['totalFrames'], 60);
       expect(stats['landmarksPerFrame'], 126);
     });
   });
