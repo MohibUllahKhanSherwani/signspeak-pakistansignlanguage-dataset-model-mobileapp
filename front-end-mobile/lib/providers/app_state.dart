@@ -9,6 +9,8 @@ import '../services/prediction_service.dart';
 /// - Landmark buffer state
 /// - Connection status to backend
 /// - Current prediction results
+/// - Prediction smoothing (matching Python's sliding window logic)
+/// - Sentence history of confirmed signs
 /// - API communication throttling
 class AppState extends ChangeNotifier {
   final LandmarkManager _landmarkManager = LandmarkManager();
@@ -19,10 +21,22 @@ class AppState extends ChangeNotifier {
   double _currentConfidence = 0.0;
   bool _isProcessing = false;
   String? _errorMessage;
-  String _debugInfo = ''; // Add debug info field
+  String _debugInfo = '';
+  
+  // --- Prediction Smoothing (matches Python realtime_inference_minimal.py) ---
+  // Python keeps last 10 predictions, requires >8 agreements (9/10) + confidence > threshold
+  static const int _smoothingWindowSize = 10;
+  static const int _requiredAgreements = 9;   // >8 means at least 9 must agree
+  static const double _confidenceThreshold = 0.8;
+  static const int _maxSentenceLength = 20;
+  
+  final List<String> _recentPredictions = [];  // Sliding window of last N predictions
+  String _confirmedAction = '';                 // The smoothed/stable prediction
+  double _confirmedConfidence = 0.0;
+  final List<String> _sentence = [];            // History of confirmed signs
   
   Timer? _throttleTimer;
-  static const Duration _throttleDuration = Duration(milliseconds: 200); // 200ms throttle
+  static const Duration _throttleDuration = Duration(milliseconds: 200);
 
   AppState({String? backendIp, int? backendPort}) {
     _predictionService = PredictionService(
@@ -33,14 +47,18 @@ class AppState extends ChangeNotifier {
 
   // Getters
   bool get isConnected => _isConnected;
-  String get currentAction => _currentAction;
-  double get currentConfidence => _currentConfidence;
+  String get currentAction => _confirmedAction;        // Now returns SMOOTHED action
+  double get currentConfidence => _confirmedConfidence; // Now returns SMOOTHED confidence
+  String get rawAction => _currentAction;               // Raw (unsmoothed) for debugging
+  double get rawConfidence => _currentConfidence;
   bool get isProcessing => _isProcessing;
   String? get errorMessage => _errorMessage;
   String get backendUrl => _predictionService.getBackendUrl();
-  String get debugInfo => _debugInfo; // Add getter
+  String get debugInfo => _debugInfo;
   int get currentFrameCount => _landmarkManager.currentFrameCount;
   bool get isBufferFull => _landmarkManager.isBufferFull;
+  List<String> get sentence => List.unmodifiable(_sentence);
+  int get smoothingProgress => _recentPredictions.isEmpty ? 0 : _countMostCommon();
 
   /// Checks connection to the backend server.
   Future<void> checkConnection() async {
@@ -102,7 +120,37 @@ class AppState extends ChangeNotifier {
       _currentAction = result.action;
       _currentConfidence = result.confidence;
       _errorMessage = null;
-      _isConnected = true; // Update connection status on successful request
+      _isConnected = true;
+      
+      // --- Prediction Smoothing (mirrors Python logic) ---
+      // Add to sliding window
+      _recentPredictions.add(result.action);
+      if (_recentPredictions.length > _smoothingWindowSize) {
+        _recentPredictions.removeAt(0);
+      }
+      
+      // Only confirm prediction if:
+      // 1. Confidence exceeds threshold (0.8)
+      // 2. At least 9 of last 10 predictions agree (>8)
+      final agreementCount = _recentPredictions
+          .where((p) => p == result.action)
+          .length;
+      
+      if (result.confidence > _confidenceThreshold && 
+          agreementCount >= _requiredAgreements) {
+        _confirmedAction = result.action;
+        _confirmedConfidence = result.confidence;
+        
+        // Add to sentence history (skip "nothing" and duplicates)
+        if (result.action.toLowerCase() != 'nothing') {
+          if (_sentence.isEmpty || _sentence.last != result.action) {
+            _sentence.add(result.action);
+            if (_sentence.length > _maxSentenceLength) {
+              _sentence.removeRange(0, _sentence.length - _maxSentenceLength);
+            }
+          }
+        }
+      }
     } catch (e) {
       _errorMessage = e.toString();
       _isConnected = false;
@@ -112,11 +160,30 @@ class AppState extends ChangeNotifier {
       notifyListeners();
     }
   }
+  
+  /// Counts how many times the most common prediction appears in the window.
+  int _countMostCommon() {
+    if (_recentPredictions.isEmpty) return 0;
+    final counts = <String, int>{};
+    for (final p in _recentPredictions) {
+      counts[p] = (counts[p] ?? 0) + 1;
+    }
+    return counts.values.reduce((a, b) => a > b ? a : b);
+  }
 
-  /// Clears the current prediction results.
+  /// Clears the current prediction results and smoothing state.
   void clearPrediction() {
     _currentAction = '';
     _currentConfidence = 0.0;
+    _confirmedAction = '';
+    _confirmedConfidence = 0.0;
+    _recentPredictions.clear();
+    notifyListeners();
+  }
+  
+  /// Clears the sentence history.
+  void clearSentence() {
+    _sentence.clear();
     notifyListeners();
   }
 
