@@ -38,25 +38,25 @@
 38. atm: https://psl.org.pk/dictionary/12-banking/576-atm-automated-teller-machine (22. Detects, do first part slowly)
 39. nailcutter: https://psl.org.pk/dictionary/13-bathroom/560-nail-cutter (23. Detects)
 40. shampoo: https://psl.org.pk/dictionary/13-bathroom/564-shampoo (24. Detects but a bit late to detect)
-41. razor: https://psl.org.pk/dictionary/13-bathroom/563-razor
-42. shower: https://psl.org.pk/dictionary/13-bathroom/565-shower
-43. tissuepaper: https://psl.org.pk/dictionary/13-bathroom/569-tissue-paper
-44. toothbrush: https://psl.org.pk/dictionary/13-bathroom/572-toothbrush
-45. toothpaste: https://psl.org.pk/dictionary/13-bathroom/573-toothpaste
-46. sunglasses: https://psl.org.pk/dictionary/14-beach/623-sunglasses
-47. beach: https://psl.org.pk/dictionary/14-beach/609-beach
-48. lifejacket: https://psl.org.pk/dictionary/14-beach/612-life-jacket
-49. bald: https://psl.org.pk/dictionary/15-beauty/631-bald
-50. beard: https://psl.org.pk/dictionary/15-beauty/633-beard
-51. facelotion: https://psl.org.pk/dictionary/15-beauty/650-face-lotion
-52. also: https://psl.org.pk/dictionary/2-adverbs/212-also
-53. bed: https://psl.org.pk/dictionary/16-bedroom/717-bed
-54. cupboard: https://psl.org.pk/dictionary/16-bedroom/725-cupboard
-55. beak: https://psl.org.pk/dictionary/17-birds/739-beak
-56. crow: https://psl.org.pk/dictionary/17-birds/742-crow
-57. peacock: https://psl.org.pk/dictionary/17-birds/761-peacock
-58. arrival: https://psl.org.pk/dictionary/3-airport/163-arrival
-59. umbrella: https://psl.org.pk/dictionary/14-beach/628-umbrella
+41. razor: https://psl.org.pk/dictionary/13-bathroom/563-razor (X)
+42. shower: https://psl.org.pk/dictionary/13-bathroom/565-shower (X)
+43. tissuepaper: https://psl.org.pk/dictionary/13-bathroom/569-tissue-paper (25.Detects)
+44. toothbrush: https://psl.org.pk/dictionary/13-bathroom/572-toothbrush (26. Detects)
+45. toothpaste: https://psl.org.pk/dictionary/13-bathroom/573-toothpaste (27. Detects)
+46. sunglasses: https://psl.org.pk/dictionary/14-beach/623-sunglasses (X)
+47. beach: https://psl.org.pk/dictionary/14-beach/609-beach (X)
+48. lifejacket: https://psl.org.pk/dictionary/14-beach/612-life-jacket (28. Detects)
+49. bald: https://psl.org.pk/dictionary/15-beauty/631-bald (X)
+50. beard: https://psl.org.pk/dictionary/15-beauty/633-beard (X)
+51. facelotion: https://psl.org.pk/dictionary/15-beauty/650-face-lotion (29. Detects)
+52. also: https://psl.org.pk/dictionary/2-adverbs/212-also (X)
+53. bed: https://psl.org.pk/dictionary/16-bedroom/717-bed (X)
+54. cupboard: https://psl.org.pk/dictionary/16-bedroom/725-cupboard (X)
+55. beak: https://psl.org.pk/dictionary/17-birds/739-beak (X)
+56. crow: https://psl.org.pk/dictionary/17-birds/742-crow (X)
+57. peacock: https://psl.org.pk/dictionary/17-birds/761-peacock (30. Detects)
+58. arrival: https://psl.org.pk/dictionary/3-airport/163-arrival (X)
+59. umbrella: https://psl.org.pk/dictionary/14-beach/628-umbrella (31. Detects)
 
 
 https://psl.org.pk/dictionary/16-bedroom/718-bedroom
