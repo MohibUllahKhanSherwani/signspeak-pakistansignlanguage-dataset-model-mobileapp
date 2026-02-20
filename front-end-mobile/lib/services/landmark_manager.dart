@@ -76,6 +76,13 @@ class LandmarkManager {
       'isFull': isBufferFull,
       'totalFrames': _bufferSize,
       'landmarksPerFrame': _landmarksPerFrame,
+      'nonZeroFrames': nonZeroFrameCount,
     };
+  }
+  
+  /// Counts how many frames in the buffer have actual hand data (non-zero).
+  /// A frame is considered empty if all 126 values are 0.0 (no hand detected).
+  int get nonZeroFrameCount {
+    return _buffer.where((frame) => frame.any((v) => v != 0.0)).length;
   }
 }

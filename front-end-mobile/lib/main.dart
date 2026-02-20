@@ -66,6 +66,10 @@ class _SignLanguageRecognitionScreenState
   HandLandmarkerPlugin? _handLandmarker;
   bool _isProcessingFrame = false;
   bool _isCameraInitialized = false;
+  
+  // State for "Hold Last Value" logic (gap filling)
+  List<double>? _lastRightHandLandmarks;
+  int _lastHandTimestamp = 0;
 
   @override
   void initState() {
@@ -79,7 +83,7 @@ class _SignLanguageRecognitionScreenState
     try {
       _handLandmarker = HandLandmarkerPlugin.create(
         numHands: 2,
-        minHandDetectionConfidence: 0.5,
+        minHandDetectionConfidence: 0.3, // Lowered to 0.3 for better recall/continuity
         delegate: HandLandmarkerDelegate.gpu,
       );
     } catch (e) {
@@ -143,43 +147,58 @@ class _SignLanguageRecognitionScreenState
         _cameraController!.description.sensorOrientation,
       );
 
+      // Always extract landmarks (null = no hand detected → zeros in buffer)
+      // Python always appends a frame every loop iteration, even when no hand visible.
+      // This preserves temporal continuity so the model sees a real 60-frame time window.
+      // Always extract landmarks
+      // ROBUST FIX: "FYP Saver Mode"
+      // 1. Mirror X-axis (User Right Hand -> Camera Left -> Mirror -> Model Right)
+      // 2. Force "Right Hand" buffer check (Assumes user is testing single dominant hand)
+      // 3. Hold Last Value: If hand lost, use last known landmarks to prevent zero-flicker
+      
+      List<double>? leftHandLandmarks;
+      List<double>? rightHandLandmarks;
+
       if (hands.isNotEmpty && mounted) {
-        List<double>? leftHandLandmarks;
-        List<double>? rightHandLandmarks;
-
-        for (final hand in hands) {
-          final flatLandmarks = <double>[];
-          for (final point in hand.landmarks) {
-            // MIRROR X-AXIS: Front camera raw frames are horizontally flipped
-            // compared to the rear webcam used during Python training.
-            // Applying 1.0 - x converts to rear-camera-equivalent coordinates.
-            flatLandmarks.add(1.0 - point.x);
-            flatLandmarks.add(point.y);
-            flatLandmarks.add(point.z);
-          }
-
-          // hand_landmarker v2.2.0 does NOT expose handedness labels.
-          // Use wrist X heuristic on MIRRORED coordinates (rear-camera convention):
-          //   correctedWristX < 0.5 → left side of rear-cam frame → user's LEFT hand
-          //   correctedWristX >= 0.5 → right side of rear-cam frame → user's RIGHT hand
-          // This matches how MediaPipe Holistic classifies hands during Python training.
-          final correctedWristX = 1.0 - hand.landmarks[0].x;
-          String estimatedLabel = correctedWristX < 0.5 ? 'Left' : 'Right';
-            
-            // DEBUG: Update overlay with both raw and corrected values
-            final rawX = hand.landmarks[0].x;
-            final info = 'Hand: $estimatedLabel\nRaw X: ${rawX.toStringAsFixed(3)} → Corrected: ${correctedWristX.toStringAsFixed(3)}';
-            print(info); // Keep console log
-            context.read<AppState>().updateDebugInfo(info);
-            
-            if (estimatedLabel == 'Left') {
-              leftHandLandmarks = flatLandmarks;
-            } else {
-              rightHandLandmarks = flatLandmarks;
-            }
+        final hand = hands.first;
+        final flatLandmarks = <double>[];
+        
+        for (final point in hand.landmarks) {
+          // NO MIRRORING: Training data (Rear Cam) has Right Hand on Image LEFT (x < 0.5).
+          // Front camera (Standard) also has User Right Hand on Image LEFT (x < 0.5).
+          // So raw X matches model expectation. NO FLIP NEEDED.
+          flatLandmarks.add(point.x);
+          flatLandmarks.add(point.y);
+          flatLandmarks.add(point.z);
         }
 
-        // Add to buffer
+        // FORCE RIGHT HAND MODE:
+        // Assume user is signing with their dominant hand (Right).
+        // Bypass the heuristic which is failing at x~0.5 boundary.
+        // This ensures data always goes to the correct model input columns [63:126].
+        rightHandLandmarks = flatLandmarks;
+        _lastRightHandLandmarks = flatLandmarks; // Save for gap filling
+        _lastHandTimestamp = DateTime.now().millisecondsSinceEpoch;
+        
+        // DEBUG: Update overlay
+        final rawX = hand.landmarks[0].x;
+        final info = 'Hand: Right (Forced)\nRaw X: ${rawX.toStringAsFixed(3)} (No Mirror)';
+        print(info);
+        context.read<AppState>().updateDebugInfo(info);
+      } 
+      else {
+        // HOLD LAST VALUE LOGIC:
+        // If hand lost, reuse last known landmarks for up to 500ms (approx 15 frames)
+        // This prevents the buffer from filling with zeros and breaking the model's temporal state.
+        if (_lastRightHandLandmarks != null && 
+            DateTime.now().millisecondsSinceEpoch - _lastHandTimestamp < 500) {
+           rightHandLandmarks = _lastRightHandLandmarks;
+           // Optional: Decay confidence or add jitter? No, strict hold is better for LSTM.
+        }
+      }
+
+      // Always add frame to buffer
+      if (mounted) {
         context.read<AppState>().addLandmarkFrame(
           leftHandLandmarks: leftHandLandmarks,
           rightHandLandmarks: rightHandLandmarks,
@@ -191,10 +210,6 @@ class _SignLanguageRecognitionScreenState
       _isProcessingFrame = false;
     }
   }
-
-  // Remove _convertCameraImage entirely as it's not needed for HandLandmarker (per Result 210)
-  
-  // Remove _extractHandLandmarksFromPose entirely
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {

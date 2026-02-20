@@ -25,9 +25,10 @@ class AppState extends ChangeNotifier {
   
   // --- Prediction Smoothing (matches Python realtime_inference_minimal.py) ---
   // Python keeps last 10 predictions, requires >8 agreements (9/10) + confidence > threshold
+  // UPDATED: Relaxed to >5 agreements (6/10) + confidence > 0.7 for better responsiveness
   static const int _smoothingWindowSize = 10;
-  static const int _requiredAgreements = 9;   // >8 means at least 9 must agree
-  static const double _confidenceThreshold = 0.8;
+  static const int _requiredAgreements = 6;   // 6 out of 10 must agree
+  static const double _confidenceThreshold = 0.7;
   static const int _maxSentenceLength = 20;
   
   final List<String> _recentPredictions = [];  // Sliding window of last N predictions
@@ -59,6 +60,9 @@ class AppState extends ChangeNotifier {
   bool get isBufferFull => _landmarkManager.isBufferFull;
   List<String> get sentence => List.unmodifiable(_sentence);
   int get smoothingProgress => _recentPredictions.isEmpty ? 0 : _countMostCommon();
+  /// How many of the 60 buffered frames actually have hand data.
+  int get nonZeroFrameCount => _landmarkManager.nonZeroFrameCount;
+  static const int _minHandFrames = 20; // At least 20/60 frames must have hand data
 
   /// Checks connection to the backend server.
   Future<void> checkConnection() async {
@@ -86,7 +90,9 @@ class AppState extends ChangeNotifier {
     );
 
     // Trigger prediction if buffer is full and not currently throttled
-    if (_landmarkManager.isBufferFull && _throttleTimer == null && !_isProcessing) {
+    if (_landmarkManager.isBufferFull &&
+        _throttleTimer == null &&
+        !_isProcessing) {
       _schedulePrediction();
     }
 

@@ -1,3 +1,10 @@
+Detects on mobile too:
+1. fan: https://psl.org.pk/dictionary/10-around-the-house/415-fan
+2. you: https://psl.org.pk/dictionary/63-pronouns/4124-you
+3. dog: https://psl.org.pk/dictionary/51-mammals/2861-dog (But close hands a little bit when signing)
+
+
+
 1. hi/hello: https://psl.org.pk/dictionary/65-sentences/4309-hello (1. Detects)
 2. assalamualaikum: https://psl.org.pk/dictionary/65-sentences/4268-assalam-o-alaikum (2. Detects)
 3. thankyou: https://psl.org.pk/dictionary/65-sentences/4369-thank-you (X)
@@ -7,11 +14,9 @@
 7. bring: https://psl.org.pk/dictionary/72-verbs/4871-bring (4. Detects)
 8. airplane: https://psl.org.pk/dictionary/3-airport/162-airplane (X)
 9. donttouch: https://psl.org.pk/dictionary/65-sentences/4297-don-t-touch ! (X)
-10. fan: https://psl.org.pk/dictionary/10-around-the-house/415-fan (5. Detects)
 11. bench: https://psl.org.pk/dictionary/10-around-the-house/406-bench (X)
 12. haveagoodday: https://psl.org.pk/dictionary/81-kfc/6740-have-a-good-day! (X)
 13. we: https://psl.org.pk/dictionary/63-pronouns/4123-we (X)
-14. you: https://psl.org.pk/dictionary/63-pronouns/4124-you (X) Detects fan as both are similar
 15. door: https://psl.org.pk/dictionary/10-around-the-house/412-door (6. Detects)
 16. garden: https://psl.org.pk/dictionary/10-around-the-house/421-garden (X)
 17. mine: https://psl.org.pk/dictionary/63-pronouns/4106-mine (X) Detects both
@@ -29,7 +34,6 @@
 29. deer: https://psl.org.pk/dictionary/51-mammals/2859-deer (X)
 30. chimpanzee: https://psl.org.pk/dictionary/51-mammals/2854-chimpanzee (17. Detects)
 31. elephant: https://psl.org.pk/dictionary/51-mammals/2863-elephant (18. Detects)
-32. dog: https://psl.org.pk/dictionary/51-mammals/2861-dog (19. Detects But close hands a little bit when signing)
 33. policecar: https://psl.org.pk/dictionary/70-transport/4706-police-car (X)
 34. bicycle: https://psl.org.pk/dictionary/70-transport/4644-bicycle (20. Detects)
 35. bridge: https://psl.org.pk/dictionary/70-transport/4646-bridge (X)

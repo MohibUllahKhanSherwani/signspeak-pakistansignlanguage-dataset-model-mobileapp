@@ -46,6 +46,12 @@ class DataCollectorGUI:
         except (FileNotFoundError, ValueError):
             self.actions = []
             self.current_action = tk.StringVar(value="")
+
+        # Camera selection state
+        self.available_camera_indices = self.detect_available_cameras()
+        if not self.available_camera_indices:
+            self.available_camera_indices = [0]
+        self.selected_camera = tk.StringVar(value=str(self.available_camera_indices[0]))
         
         # Build UI
         self.build_ui()
@@ -59,6 +65,80 @@ class DataCollectorGUI:
         self.window.bind("<S>", lambda e: self.start_collection_thread())
         
         self.window.mainloop()
+
+    def _backend_candidates(self):
+        """Return camera backend candidates in preferred order."""
+        if os.name == "nt":
+            candidates = []
+            if hasattr(cv2, "CAP_DSHOW"):
+                candidates.append(cv2.CAP_DSHOW)
+            if hasattr(cv2, "CAP_MSMF"):
+                candidates.append(cv2.CAP_MSMF)
+            candidates.append(None)  # Default OpenCV backend
+            return candidates
+        return [None]
+
+    def _open_capture(self, index, backend=None):
+        """Open camera with optional explicit backend."""
+        if backend is None:
+            return cv2.VideoCapture(index)
+        return cv2.VideoCapture(index, backend)
+
+    def _camera_has_frames(self, cap, warmup_frames=10):
+        """Check whether capture can deliver frames after warm-up."""
+        if not cap.isOpened():
+            return False
+        for _ in range(warmup_frames):
+            ret, _ = cap.read()
+            if ret:
+                return True
+            time.sleep(0.05)
+        return False
+
+    def open_capture_with_fallback(self, index):
+        """Try multiple backends and return the first working capture."""
+        for backend in self._backend_candidates():
+            cap = self._open_capture(index, backend)
+            if self._camera_has_frames(cap):
+                return cap
+            cap.release()
+        return self._open_capture(index)
+
+    def detect_available_cameras(self, max_index=8):
+        """Probe camera indices and return a list of working indices."""
+        detected = []
+        for idx in range(max_index + 1):
+            cap = self.open_capture_with_fallback(idx)
+            if self._camera_has_frames(cap, warmup_frames=5):
+                detected.append(idx)
+            cap.release()
+        return detected
+
+    def get_selected_camera_index(self):
+        """Safely parse selected camera index."""
+        try:
+            return int(self.selected_camera.get())
+        except (TypeError, ValueError):
+            return 0
+
+    def refresh_camera_list(self, show_feedback=True):
+        """Rescan cameras and refresh dropdown values."""
+        if self.is_collecting:
+            return
+
+        detected = self.detect_available_cameras()
+        if not detected:
+            detected = [0]
+
+        self.available_camera_indices = detected
+        values = [str(i) for i in detected]
+        self.camera_dropdown.config(values=values)
+
+        if self.selected_camera.get() not in values:
+            self.selected_camera.set(values[0])
+
+        if show_feedback:
+            messagebox.showinfo("Camera Scan", f"Detected camera indices: {', '.join(values)}")
 
     # --------------------------
     # UI Builder
@@ -145,6 +225,35 @@ class DataCollectorGUI:
             padx=10,
             pady=5
         ).grid(row=0, column=3, padx=5)
+
+        tk.Label(
+            left_controls,
+            text="Camera Index:",
+            font=("Arial", 12),
+            bg="#2C3E50",
+            fg="#ECF0F1"
+        ).grid(row=1, column=0, padx=5, pady=(10, 0), sticky="w")
+
+        self.camera_dropdown = ttk.Combobox(
+            left_controls,
+            values=[str(i) for i in self.available_camera_indices],
+            textvariable=self.selected_camera,
+            width=10,
+            font=("Arial", 11),
+            state="readonly"
+        )
+        self.camera_dropdown.grid(row=1, column=1, padx=5, pady=(10, 0), sticky="w")
+
+        tk.Button(
+            left_controls,
+            text="Rescan Cameras",
+            command=self.refresh_camera_list,
+            bg="#3498DB",
+            fg="white",
+            font=("Arial", 10, "bold"),
+            padx=10,
+            pady=5
+        ).grid(row=1, column=2, columnspan=2, padx=5, pady=(10, 0), sticky="w")
         
         # ===== STATISTICS PANEL =====
         stats_frame = tk.Frame(self.window, bg="#34495E")
@@ -490,6 +599,7 @@ class DataCollectorGUI:
         self.pause_btn.config(state=tk.NORMAL)
         self.stop_btn.config(state=tk.NORMAL)
         self.dropdown.config(state=tk.DISABLED)
+        self.camera_dropdown.config(state=tk.DISABLED)
         
         # Start timer
         self.update_session_timer()
@@ -553,10 +663,16 @@ class DataCollectorGUI:
         # self.progress["maximum"] = total
         # self.progress["value"] = start_seq
 
-        cap = cv2.VideoCapture(0)
+        camera_index = self.get_selected_camera_index()
+        cap = self.open_capture_with_fallback(camera_index)
         
-        if not cap.isOpened():
-            messagebox.showerror("Camera Error", "Could not open camera!")
+        if not self._camera_has_frames(cap, warmup_frames=10):
+            messagebox.showerror(
+                "Camera Error",
+                f"Could not open camera index {camera_index}.\n"
+                "Click 'Rescan Cameras' and try a different index."
+            )
+            cap.release()
             self.reset_ui_after_collection()
             return
 
@@ -659,6 +775,7 @@ class DataCollectorGUI:
         self.pause_btn.config(state=tk.DISABLED, text="⏸️ PAUSE", bg="#F39C12")
         self.stop_btn.config(state=tk.DISABLED)
         self.dropdown.config(state=tk.NORMAL)
+        self.camera_dropdown.config(state="readonly")
         self.save_stats()
 
     def create_folders(self, action):
