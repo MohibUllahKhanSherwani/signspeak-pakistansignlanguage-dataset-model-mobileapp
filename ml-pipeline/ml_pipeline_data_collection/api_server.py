@@ -247,8 +247,8 @@ async def predict_frames(
 
             frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
             
-            # 2. Horizontal Flip (MediaPipe front camera usually needs mirroring)
-            frame = cv2.flip(frame, 1)
+            # 2. Horizontal Flip - REMOVED: Caused hand swapping mismatch with training data
+            # frame = cv2.flip(frame, 1)
             
             # Use EXACT same pipeline as training data collection
             image, results = mediapipe_detection(frame, holistic)

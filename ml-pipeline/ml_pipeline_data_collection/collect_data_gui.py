@@ -31,6 +31,7 @@ class DataCollectorGUI:
         self.window.title("SignSpeak – Enhanced Data Collector")
         self.window.geometry("900x600")
         self.window.configure(bg="#2C3E50")
+        self.camera_scan_max_index = self._get_camera_scan_max_index()
         
         # State variables
         self.stop_flag = False
@@ -78,6 +79,14 @@ class DataCollectorGUI:
             return candidates
         return [None]
 
+    def _get_camera_scan_max_index(self):
+        """Allow wider camera index scanning for virtual cameras (Camo/OBS)."""
+        value = os.getenv("SIGNSPEAK_CAMERA_MAX_INDEX", "20").strip()
+        try:
+            return max(0, int(value))
+        except ValueError:
+            return 20
+
     def _open_capture(self, index, backend=None):
         """Open camera with optional explicit backend."""
         if backend is None:
@@ -104,8 +113,10 @@ class DataCollectorGUI:
             cap.release()
         return self._open_capture(index)
 
-    def detect_available_cameras(self, max_index=8):
+    def detect_available_cameras(self, max_index=None):
         """Probe camera indices and return a list of working indices."""
+        if max_index is None:
+            max_index = self.camera_scan_max_index
         detected = []
         for idx in range(max_index + 1):
             cap = self.open_capture_with_fallback(idx)
