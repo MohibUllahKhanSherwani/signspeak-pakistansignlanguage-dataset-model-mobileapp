@@ -6,12 +6,24 @@ config_dir = os.path.dirname(os.path.abspath(__file__))
 # Path to actions file (relative to this config file)
 ACTIONS_FILE = os.path.join(config_dir, "actions.txt")
 
-# Where data will be stored (relative to this config file)
-DATA_PATH = os.path.join(config_dir, "MP_Data")
+# Dataset folders
+DATASET_FOLDERS = {
+    "laptop": "MP_Data",         # Existing laptop camera dataset
+    "mobile": "MP_Data_mobile",  # New mobile camera dataset
+}
+
+# Use SIGNSPEAK_DATASET=laptop or SIGNSPEAK_DATASET=mobile to switch quickly.
+# Any other value is treated as a custom folder name/path.
+_dataset_setting = os.getenv("SIGNSPEAK_DATASET", "mobile").strip() # Change this line to swap
+ACTIVE_DATASET = _dataset_setting.lower()
+DATA_FOLDER = DATASET_FOLDERS.get(ACTIVE_DATASET, _dataset_setting) or DATASET_FOLDERS["mobile"]
+
+# Where data will be stored
+DATA_PATH = DATA_FOLDER if os.path.isabs(DATA_FOLDER) else os.path.join(config_dir, DATA_FOLDER)
 
 # Recording params
 SEQUENCE_LENGTH = 60          # number of frames per sequence (2.0 seconds)
-NUM_SEQUENCES = 50            # how many sequences per action (50 is sufficient with augmentation)
+NUM_SEQUENCES = 20            # how many sequences per action (50 is sufficient with augmentation)
 FRAME_WAIT_MS = 1           # delay between frames during collection (1ms allows max speed)
 
 # Model params
