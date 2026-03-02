@@ -12,7 +12,12 @@ late List<CameraDescription> cameras;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  cameras = await availableCameras();
+  try {
+    cameras = await availableCameras();
+  } catch (e) {
+    debugPrint('Available cameras error: $e');
+    cameras = [];
+  }
   runApp(const SignSpeakApp());
 }
 
@@ -22,20 +27,125 @@ class SignSpeakApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SignSpeak V2',
+      title: 'SignSpeak Pro',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: const Color(0xFF6C63FF),
+        colorSchemeSeed: const Color(0xFF6366F1),
         brightness: Brightness.dark,
-        textTheme: GoogleFonts.interTextTheme(
+        textTheme: GoogleFonts.outfitTextTheme(
           ThemeData(brightness: Brightness.dark).textTheme,
         ),
       ),
-      home: const CameraScreen(),
+      home: const LandingScreen(),
     );
   }
 }
+
+/// A Premium Landing Screen for the App
+class LandingScreen extends StatelessWidget {
+  const LandingScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Logo/Icon
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
+                ),
+                child: const Icon(
+                  Icons.sign_language_rounded,
+                  size: 80,
+                  color: Color(0xFF818CF8),
+                ),
+              ),
+              const SizedBox(height: 40),
+              Text(
+                'SignSpeak',
+                style: GoogleFonts.outfit(
+                  fontSize: 48,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Bridge the gap with AI-powered\nSign Language Translation',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(
+                  fontSize: 18,
+                  color: Colors.white60,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              const SizedBox(height: 60),
+              // Get Started Button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 64,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const CameraScreen()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6366F1),
+                      foregroundColor: Colors.white,
+                      elevation: 10,
+                      shadowColor: const Color(0xFF6366F1).withOpacity(0.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Start Recognition',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(width: 12),
+                        const Icon(Icons.arrow_forward_rounded),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Version 2.1.0 (Mobile Optimizer)',
+                style: TextStyle(color: Colors.white24, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum RecordingState { standby, countdown, recording, predicting, result }
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -44,31 +154,21 @@ class CameraScreen extends StatefulWidget {
   State<CameraScreen> createState() => _CameraScreenState();
 }
 
-class _CameraScreenState extends State<CameraScreen>
-    with WidgetsBindingObserver {
+class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver {
   CameraController? _controller;
   bool _isCameraReady = false;
   bool _isServerConnected = false;
-  bool _isPredicting = false;
+  RecordingState _state = RecordingState.standby;
 
-  // Circular buffer: stores the last 60 JPEG frames
+  // Circular buffer: stores the target 60 JPEG frames
   final Queue<Uint8List> _frameBuffer = Queue<Uint8List>();
-  static const int _bufferSize = AppConfig.sequenceLength; // 60
-  int _framesInBuffer = 0;
-  bool _isBufferFull = false;
-
-  // Frame capture throttle
+  static const int _targetFrames = AppConfig.sequenceLength;
+  
   bool _isProcessingFrame = false;
-  int _frameSkipCount = 0;
-  // Capture every Nth frame from the stream to hit ~30fps equivalent
-  // Camera streams at 30fps natively, so we take every frame
-  // But if processing is slow, we skip frames
-  static const int _captureEveryN = 1;
-
-  // Prediction result
   PredictionResult? _lastResult;
   InferenceModel _selectedModel = InferenceModel.baseline;
   String? _errorMessage;
+  int _countdownValue = 1;
 
   @override
   void initState() {
@@ -85,17 +185,6 @@ class _CameraScreenState extends State<CameraScreen>
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_controller == null || !_controller!.value.isInitialized) return;
-    if (state == AppLifecycleState.inactive) {
-      _controller?.dispose();
-      _controller = null;
-    } else if (state == AppLifecycleState.resumed) {
-      _initCamera();
-    }
-  }
-
   Future<void> _checkServer() async {
     final connected = await PredictionService.checkHealth();
     if (mounted) {
@@ -106,7 +195,6 @@ class _CameraScreenState extends State<CameraScreen>
   Future<void> _initCamera() async {
     if (cameras.isEmpty) return;
 
-    // Prefer front camera
     final frontCam = cameras.firstWhere(
       (c) => c.lensDirection == CameraLensDirection.front,
       orElse: () => cameras.first,
@@ -114,7 +202,7 @@ class _CameraScreenState extends State<CameraScreen>
 
     _controller = CameraController(
       frontCam,
-      ResolutionPreset.medium, // 480p — enough for MediaPipe, saves battery
+      ResolutionPreset.medium,
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.yuv420,
     );
@@ -130,168 +218,138 @@ class _CameraScreenState extends State<CameraScreen>
     }
   }
 
-  /// Start the camera image stream and capture frames into the buffer.
-  /// This uses startImageStream() which provides frames at camera native
-  /// FPS (~30fps) without disk I/O, unlike takePicture().
   void _startImageStream() {
     if (_controller == null || !_controller!.value.isInitialized) return;
 
     _controller!.startImageStream((CameraImage cameraImage) {
-      if (_isPredicting || _isProcessingFrame) return;
-
-      // Throttle: skip frames if needed
-      _frameSkipCount++;
-      if (_frameSkipCount % _captureEveryN != 0) return;
+      // ONLY buffer if we are in the recording state
+      if (_state != RecordingState.recording || _isProcessingFrame) return;
 
       _isProcessingFrame = true;
       _convertAndBufferFrame(cameraImage).then((_) {
         _isProcessingFrame = false;
+        
+        // AUTO-TRIGGER prediction when buffer is full
+        if (_frameBuffer.length >= _targetFrames && _state == RecordingState.recording) {
+          _predict();
+        }
       });
     });
   }
 
-  /// Convert a CameraImage (YUV420) to JPEG and add to the circular buffer.
+  Future<void> _startSequenceCapture() async {
+    if (!_isServerConnected) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Wait for server connection...')),
+      );
+      return;
+    }
+
+    // 1. Start Countdown (0.5s as requested)
+    setState(() {
+      _state = RecordingState.countdown;
+      _frameBuffer.clear();
+      _errorMessage = null;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // 2. Start Recording
+    if (mounted) {
+      setState(() => _state = RecordingState.recording);
+    }
+  }
+
   Future<void> _convertAndBufferFrame(CameraImage cameraImage) async {
     try {
-      // Yield to UI thread
-      await Future.delayed(Duration.zero);
-
-      // Convert YUV420 to img.Image
       final image = _convertYUV420ToImage(cameraImage);
       if (image == null) return;
 
-      // Resize to target dimensions for smaller payload
       final resized = img.copyResize(
         image,
         width: AppConfig.frameWidth,
         height: AppConfig.frameHeight,
       );
 
-      // Encode as JPEG
       final jpeg = Uint8List.fromList(
         img.encodeJpg(resized, quality: AppConfig.jpegQuality),
       );
 
-      // Add to circular buffer
       _frameBuffer.addLast(jpeg);
-      if (_frameBuffer.length > _bufferSize) {
-        _frameBuffer.removeFirst();
-      }
-
+      
       if (mounted) {
-        setState(() {
-          _framesInBuffer = _frameBuffer.length;
-          _isBufferFull = _frameBuffer.length >= _bufferSize;
-        });
+        setState(() {}); // Update progress bar
       }
     } catch (e) {
-      debugPrint('Frame convert error: $e');
+      debugPrint('Frame conversion error: $e');
     }
   }
 
-  /// Convert YUV420 CameraImage to img.Image.
-  /// This handles the NV21/YUV420SP format that Android cameras produce.
   img.Image? _convertYUV420ToImage(CameraImage cameraImage) {
     try {
       final int width = cameraImage.width;
       final int height = cameraImage.height;
+      final image = img.Image(width: width, height: height);
 
       final yPlane = cameraImage.planes[0];
       final uPlane = cameraImage.planes[1];
       final vPlane = cameraImage.planes[2];
 
-      final image = img.Image(width: width, height: height);
-
       for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
           final int yIndex = y * yPlane.bytesPerRow + x;
-          final int uvIndex =
-              (y ~/ 2) * uPlane.bytesPerRow + (x ~/ 2) * uPlane.bytesPerPixel!;
+          final int uvIndex = (y ~/ 2) * uPlane.bytesPerRow + (x ~/ 2) * uPlane.bytesPerPixel!;
 
           final int yValue = yPlane.bytes[yIndex];
           final int uValue = uPlane.bytes[uvIndex];
           final int vValue = vPlane.bytes[uvIndex];
 
-          // YUV to RGB conversion
           int r = (yValue + 1.370705 * (vValue - 128)).round().clamp(0, 255);
-          int g =
-              (yValue - 0.337633 * (uValue - 128) - 0.698001 * (vValue - 128))
-                  .round()
-                  .clamp(0, 255);
+          int g = (yValue - 0.337633 * (uValue - 128) - 0.698001 * (vValue - 128)).round().clamp(0, 255);
           int b = (yValue + 1.732446 * (uValue - 128)).round().clamp(0, 255);
 
           image.setPixelRgb(x, y, r, g, b);
         }
       }
-
       return image;
     } catch (e) {
-      debugPrint('YUV conversion error: $e');
       return null;
     }
   }
 
   Future<void> _predict() async {
-    if (!_isBufferFull || _isPredicting) return;
-
-    setState(() {
-      _isPredicting = true;
-      _errorMessage = null;
-    });
-
-    // Stop the image stream during prediction upload
-    try {
-      await _controller?.stopImageStream();
-    } catch (_) {}
+    setState(() => _state = RecordingState.predicting);
 
     try {
-      // Snapshot the buffer
       final frames = _frameBuffer.toList();
-
-      final result = await PredictionService.predictFromFrames(
-        frames,
-        model: _selectedModel,
-      );
+      final result = await PredictionService.predictFromFrames(frames, model: _selectedModel);
 
       if (mounted) {
         setState(() {
           _lastResult = result;
-          _isPredicting = false;
+          _state = RecordingState.result;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _errorMessage = e.toString();
-          _isPredicting = false;
+          _state = RecordingState.standby;
         });
       }
     }
-
-    // Resume the image stream
-    _startImageStream();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D1A),
+      backgroundColor: const Color(0xFF0F172A),
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             _buildHeader(),
-
-            // Camera preview
-            Expanded(child: _buildCameraPreview()),
-
-            // Prediction result
-            _buildResultCard(),
-
-            // Predict button
-            _buildPredictButton(),
-
-            const SizedBox(height: 16),
+            Expanded(child: _buildCameraContainer()),
+            _buildControlArea(),
           ],
         ),
       ),
@@ -299,41 +357,26 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Column(
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6C63FF), Color(0xFF9D4EDD)],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.sign_language,
-                  color: Colors.white,
-                  size: 24,
-                ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Text(
-                'SignSpeak',
-                style: GoogleFonts.inter(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
+                'Recognition',
+                style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
-              // Server status indicator
-              _buildServerBadge(),
+              _buildConnectionBadge(),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           _buildModelSelector(),
         ],
       ),
@@ -341,6 +384,10 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   Widget _buildModelSelector() {
+    bool isWorking = _state == RecordingState.countdown ||
+        _state == RecordingState.recording ||
+        _state == RecordingState.predicting;
+
     return SizedBox(
       width: double.infinity,
       child: SegmentedButton<InferenceModel>(
@@ -348,408 +395,165 @@ class _CameraScreenState extends State<CameraScreen>
           ButtonSegment<InferenceModel>(
             value: InferenceModel.baseline,
             label: Text('Baseline'),
-            icon: Icon(Icons.speed, size: 16),
+            icon: Icon(Icons.speed_rounded, size: 16),
           ),
           ButtonSegment<InferenceModel>(
             value: InferenceModel.augmented,
             label: Text('Augmented'),
-            icon: Icon(Icons.auto_awesome, size: 16),
+            icon: Icon(Icons.auto_awesome_rounded, size: 16),
           ),
         ],
         selected: {_selectedModel},
         showSelectedIcon: false,
-        onSelectionChanged: _isPredicting
+        onSelectionChanged: isWorking
             ? null
-            : (selection) {
-                if (selection.isEmpty) return;
+            : (Set<InferenceModel> newSelection) {
                 setState(() {
-                  _selectedModel = selection.first;
+                  _selectedModel = newSelection.first;
                 });
               },
+        style: SegmentedButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+          selectedBackgroundColor: const Color(0xFF6366F1).withOpacity(0.2),
+          selectedForegroundColor: const Color(0xFF818CF8),
+          side: BorderSide(color: Colors.white.withOpacity(0.1)),
+        ),
       ),
     );
   }
 
-  Widget _buildServerBadge() {
-    return GestureDetector(
-      onTap: _checkServer, // Tap to refresh connection
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: _isServerConnected
-              ? Colors.green.withOpacity(0.15)
-              : Colors.red.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: _isServerConnected
-                ? Colors.green.withOpacity(0.4)
-                : Colors.red.withOpacity(0.4),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+  Widget _buildConnectionBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: _isServerConnected ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _isServerConnected ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(width: 8, height: 8, decoration: BoxDecoration(shape: BoxShape.circle, color: _isServerConnected ? Colors.green : Colors.red)),
+          const SizedBox(width: 6),
+          Text(_isServerConnected ? 'Online' : 'Offline', style: TextStyle(fontSize: 12, color: _isServerConnected ? Colors.green : Colors.red)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCameraContainer() {
+    if (!_isCameraReady) return const Center(child: CircularProgressIndicator());
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: _getBorderColor(), width: 2),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(26),
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _isServerConnected ? Colors.green : Colors.red,
-              ),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              _isServerConnected ? 'Connected' : 'Offline',
-              style: TextStyle(
-                fontSize: 12,
-                color: _isServerConnected ? Colors.green : Colors.red,
-              ),
-            ),
+            CameraPreview(_controller!),
+            _buildOverlay(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCameraPreview() {
-    if (!_isCameraReady || _controller == null) {
-      return const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(color: Color(0xFF6C63FF)),
-            SizedBox(height: 16),
-            Text(
-              'Initializing camera...',
-              style: TextStyle(color: Colors.white54),
-            ),
-          ],
+  Color _getBorderColor() {
+    switch (_state) {
+      case RecordingState.recording: return Colors.redAccent;
+      case RecordingState.countdown: return Colors.orangeAccent;
+      case RecordingState.predicting: return const Color(0xFF6366F1);
+      default: return Colors.white10;
+    }
+  }
+
+  Widget _buildOverlay() {
+    if (_state == RecordingState.countdown) {
+      return Container(
+        color: Colors.black45,
+        child: const Center(child: Text('READY', style: TextStyle(fontSize: 60, fontWeight: FontWeight.w900, color: Colors.orangeAccent))),
+      );
+    }
+    
+    if (_state == RecordingState.recording) {
+      return Positioned(
+        top: 20, right: 20,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(8)),
+          child: const Row(children: [Icon(Icons.circle, size: 12, color: Colors.white), SizedBox(width: 8), Text('REC', style: TextStyle(fontWeight: FontWeight.bold))]),
         ),
       );
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: _isBufferFull
-              ? const Color(0xFF6C63FF).withOpacity(0.6)
-              : Colors.white.withOpacity(0.1),
-          width: 2,
-        ),
-        boxShadow: _isBufferFull
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF6C63FF).withOpacity(0.2),
-                  blurRadius: 20,
-                  spreadRadius: 2,
-                ),
-              ]
-            : null,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Camera feed
-            CameraPreview(_controller!),
+    if (_state == RecordingState.predicting) {
+      return Container(
+        color: Colors.black54,
+        child: const Center(child: Column(mainAxisSize: MainAxisSize.min, children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Analyzing Signs...')])),
+      );
+    }
 
-            // Buffer fill indicator overlay
-            Positioned(
-              top: 12,
-              left: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _isBufferFull ? Icons.check_circle : Icons.hourglass_top,
-                      color: _isBufferFull ? Colors.greenAccent : Colors.amber,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      _isBufferFull
-                          ? 'Ready (${_framesInBuffer}f)'
-                          : 'Buffering $_framesInBuffer/$_bufferSize',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+    return const SizedBox.shrink();
+  }
 
-            // Processing overlay
-            if (_isPredicting)
-              Container(
-                color: Colors.black.withOpacity(0.4),
-                child: const Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(
-                        color: Color(0xFF6C63FF),
-                        strokeWidth: 3,
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        'Processing...',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Running MediaPipe + LSTM on server',
-                        style: TextStyle(color: Colors.white54, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
+  Widget _buildControlArea() {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          if (_state == RecordingState.result && _lastResult != null) _buildResultCard(),
+          if (_errorMessage != null) Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent)),
+          const SizedBox(height: 20),
+          _buildActionButton(),
+        ],
       ),
     );
   }
 
   Widget _buildResultCard() {
-    if (_errorMessage != null) {
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.red.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.redAccent),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                _errorMessage!,
-                style: const TextStyle(color: Colors.redAccent, fontSize: 13),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_lastResult == null) {
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.03),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.06)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Sign a word, then tap Predict',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.4),
-                fontSize: 15,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _metaChip(Icons.tune, 'Selected model: ${_selectedModel.label}'),
-          ],
-        ),
-      );
-    }
-
-    final result = _lastResult!;
-    final isConfident = result.confidence >= AppConfig.confidenceThreshold;
-
+    final res = _lastResult!;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isConfident
-              ? [const Color(0xFF1A1A2E), const Color(0xFF16213E)]
-              : [const Color(0xFF2D1B1B), const Color(0xFF1A1A2E)],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isConfident
-              ? const Color(0xFF6C63FF).withValues(alpha: 0.3)
-              : Colors.orange.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        children: [
-          // Action name
-          Text(
-            result.action.toUpperCase().replaceAll('_', ' '),
-            style: GoogleFonts.inter(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: isConfident ? const Color(0xFF6C63FF) : Colors.orange,
-              letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          // Confidence bar
-          Row(
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: result.confidence,
-                    minHeight: 6,
-                    backgroundColor: Colors.white.withValues(alpha: 0.1),
-                    valueColor: AlwaysStoppedAnimation(
-                      isConfident ? const Color(0xFF6C63FF) : Colors.orange,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                '${(result.confidence * 100).toStringAsFixed(1)}%',
-                style: TextStyle(
-                  color: isConfident ? Colors.white : Colors.orange,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // Meta info
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 12,
-            runSpacing: 8,
-            children: [
-              _metaChip(Icons.timer, '${result.processingTimeMs}ms'),
-              _metaChip(
-                Icons.back_hand,
-                '${result.handsDetected}/${result.framesProcessed} hands',
-              ),
-              _metaChip(
-                Icons.tune,
-                'model: ${_toModelLabel(result.modelUsed)}',
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _metaChip(IconData icon, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
-      ),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.white10)),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: Colors.white38),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            style: const TextStyle(fontSize: 11, color: Colors.white54),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('PREDICTION', style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+              Text(res.action.toUpperCase(), style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.w800, color: const Color(0xFF818CF8))),
+            ]),
+          ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: const Color(0xFF6366F1).withOpacity(0.1), borderRadius: BorderRadius.circular(15)),
+            child: Text('${(res.confidence * 100).toInt()}%', style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPredictButton() {
-    final canPredict = _isBufferFull && !_isPredicting && _isServerConnected;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: ElevatedButton(
-          onPressed: canPredict ? _predict : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF6C63FF),
-            disabledBackgroundColor: Colors.white.withOpacity(0.05),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: canPredict ? 8 : 0,
-            shadowColor: const Color(0xFF6C63FF).withOpacity(0.4),
-          ),
-          child: _isPredicting
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2.5,
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      canPredict ? Icons.auto_awesome : Icons.hourglass_top,
-                      size: 22,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      canPredict
-                          ? 'Predict (${_selectedModel.label})'
-                          : _isServerConnected
-                          ? 'Buffering...'
-                          : 'Server Offline',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+  Widget _buildActionButton() {
+    bool isWorking = _state == RecordingState.countdown || _state == RecordingState.recording || _state == RecordingState.predicting;
+    
+    return SizedBox(
+      width: double.infinity,
+      height: 70,
+      child: ElevatedButton(
+        onPressed: isWorking ? null : _startSequenceCapture,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _state == RecordingState.result ? Colors.white12 : const Color(0xFF6366F1),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         ),
+        child: _state == RecordingState.recording 
+          ? Text('RECORDING ${_frameBuffer.length}/60', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
+          : Text(_state == RecordingState.result ? 'Record Again' : 'Start Translation', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       ),
     );
-  }
-
-  String _toModelLabel(String modelKey) {
-    switch (modelKey.toLowerCase()) {
-      case 'augmented':
-        return 'Augmented';
-      case 'baseline':
-      default:
-        return 'Baseline';
-    }
   }
 }
