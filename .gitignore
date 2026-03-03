@@ -8,3 +8,7 @@ __pycache__/
 
 SDD/
 SRS/
+ml-pipeline/ml_pipeline_data_collection/debug_input_frame.jpg
+.gitignore
+ml-pipeline/ml_pipeline_data_collection/image.png
+ml-pipeline/ml_pipeline_data_collection/debug_processed_frame.jpg
