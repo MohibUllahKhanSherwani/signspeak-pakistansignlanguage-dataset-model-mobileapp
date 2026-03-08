@@ -3,26 +3,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config.dart';
 
-enum InferenceModel { baseline, augmented }
-
-extension InferenceModelX on InferenceModel {
-  String get apiValue => name;
-
-  String get label {
-    switch (this) {
-      case InferenceModel.baseline:
-        return 'Baseline';
-      case InferenceModel.augmented:
-        return 'Augmented';
-    }
-  }
-}
-
 class PredictionResult {
   final String action;
   final double confidence;
   final Map<String, double> allProbabilities;
-  final String modelUsed;
   final int processingTimeMs;
   final int framesProcessed;
   final int handsDetected;
@@ -31,7 +15,6 @@ class PredictionResult {
     required this.action,
     required this.confidence,
     required this.allProbabilities,
-    required this.modelUsed,
     required this.processingTimeMs,
     required this.framesProcessed,
     required this.handsDetected,
@@ -44,8 +27,6 @@ class PredictionResult {
       allProbabilities: (json['all_probabilities'] as Map<String, dynamic>).map(
         (k, v) => MapEntry(k, (v as num).toDouble()),
       ),
-      modelUsed:
-          (json['model_used'] as String?) ?? InferenceModel.baseline.apiValue,
       processingTimeMs: json['processing_time_ms'] as int,
       framesProcessed: json['frames_processed'] as int,
       handsDetected: json['hands_detected'] as int,
@@ -58,9 +39,8 @@ class PredictionService {
   ///
   /// [frames] must be exactly 60 JPEG-encoded byte arrays.
   static Future<PredictionResult> predictFromFrames(
-    List<Uint8List> frames, {
-    required InferenceModel model,
-  }) async {
+    List<Uint8List> frames,
+  ) async {
     if (frames.length != AppConfig.sequenceLength) {
       throw Exception(
         'Expected ${AppConfig.sequenceLength} frames, got ${frames.length}',
@@ -68,7 +48,7 @@ class PredictionService {
     }
 
     final uri = Uri.parse(
-      '${AppConfig.serverUrl}/predict-frames?model=${model.apiValue}',
+      '${AppConfig.serverUrl}/predict-frames',
     );
     final request = http.MultipartRequest('POST', uri);
 

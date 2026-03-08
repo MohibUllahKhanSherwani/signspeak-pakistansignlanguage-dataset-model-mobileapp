@@ -166,7 +166,6 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   
   bool _isProcessingFrame = false;
   PredictionResult? _lastResult;
-  InferenceModel _selectedModel = InferenceModel.baseline;
   String? _errorMessage;
   int _countdownValue = 1;
 
@@ -322,7 +321,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
     try {
       final frames = _frameBuffer.toList();
-      final result = await PredictionService.predictFromFrames(frames, model: _selectedModel);
+      final result = await PredictionService.predictFromFrames(frames);
 
       if (mounted) {
         setState(() {
@@ -359,65 +358,20 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Recognition',
-                style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const Spacer(),
-              _buildConnectionBadge(),
-            ],
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70),
           ),
-          const SizedBox(height: 12),
-          _buildModelSelector(),
+          const SizedBox(width: 8),
+          Text(
+            'Recognition',
+            style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const Spacer(),
+          _buildConnectionBadge(),
         ],
-      ),
-    );
-  }
-
-  Widget _buildModelSelector() {
-    bool isWorking = _state == RecordingState.countdown ||
-        _state == RecordingState.recording ||
-        _state == RecordingState.predicting;
-
-    return SizedBox(
-      width: double.infinity,
-      child: SegmentedButton<InferenceModel>(
-        segments: const [
-          ButtonSegment<InferenceModel>(
-            value: InferenceModel.baseline,
-            label: Text('Baseline'),
-            icon: Icon(Icons.speed_rounded, size: 16),
-          ),
-          ButtonSegment<InferenceModel>(
-            value: InferenceModel.augmented,
-            label: Text('Augmented'),
-            icon: Icon(Icons.auto_awesome_rounded, size: 16),
-          ),
-        ],
-        selected: {_selectedModel},
-        showSelectedIcon: false,
-        onSelectionChanged: isWorking
-            ? null
-            : (Set<InferenceModel> newSelection) {
-                setState(() {
-                  _selectedModel = newSelection.first;
-                });
-              },
-        style: SegmentedButton.styleFrom(
-          visualDensity: VisualDensity.compact,
-          selectedBackgroundColor: const Color(0xFF6366F1).withOpacity(0.2),
-          selectedForegroundColor: const Color(0xFF818CF8),
-          side: BorderSide(color: Colors.white.withOpacity(0.1)),
-        ),
       ),
     );
   }
