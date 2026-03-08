@@ -16,17 +16,10 @@ from typing import List, Optional
 #Importing existing config
 from actions_config import SEQUENCE_LENGTH, load_actions
 from mediapipe_utils import mediapipe_detection, extract_keypoints
-MODEL_ARTIFACTS = {
-    "baseline": {
-        "model_path": "action_model_baseline.h5",
-        "encoder_path": "label_encoder_baseline.pkl",
-    },
-    "augmented": {
-        "model_path": "action_model_augmented.h5",
-        "encoder_path": "label_encoder_augmented.pkl",
-    },
-}
-DEFAULT_MODEL_KEY = "baseline"
+
+MODEL_PATH = "action_model_baseline.h5"
+ENCODER_PATH = "label_encoder_baseline.pkl"
+
 #Import data model
 from data_models import SequenceData
 
@@ -35,68 +28,19 @@ ml_models = {}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     #load resources
-    registry = {}
+    if not os.path.exists(MODEL_PATH):
+        raise FileNotFoundError(f"Model file not found at {MODEL_PATH}")
+    if not os.path.exists(ENCODER_PATH):
+        raise FileNotFoundError(f"Encoder file not found at {ENCODER_PATH}")
 
-    baseline_paths = MODEL_ARTIFACTS[DEFAULT_MODEL_KEY]
-    if not os.path.exists(baseline_paths["model_path"]):
-        raise FileNotFoundError(f"Model file not found at {baseline_paths['model_path']}")
-    if not os.path.exists(baseline_paths["encoder_path"]):
-        raise FileNotFoundError(f"Encoder file not found at {baseline_paths['encoder_path']}")
+    baseline_model = load_model(MODEL_PATH)
+    baseline_encoder = joblib.load(ENCODER_PATH)
 
-    baseline_model = load_model(baseline_paths["model_path"])
-    baseline_encoder = joblib.load(baseline_paths["encoder_path"])
-    registry[DEFAULT_MODEL_KEY] = {
-        "model": baseline_model,
-        "encoder": baseline_encoder,
-    }
-
-    augmented_paths = MODEL_ARTIFACTS["augmented"]
-    if os.path.exists(augmented_paths["model_path"]) and os.path.exists(augmented_paths["encoder_path"]):
-        registry["augmented"] = {
-            "model": load_model(augmented_paths["model_path"]),
-            "encoder": joblib.load(augmented_paths["encoder_path"]),
-        }
-        print("Loaded augmented model artifacts.")
-    else:
-        print("Augmented model artifacts not found. 'augmented' selection will be unavailable.")
-
-    # Keep legacy keys for /predict compatibility.
     ml_models["model"] = baseline_model
     ml_models["encoder"] = baseline_encoder
-    ml_models["registry"] = registry
-    print(f"Resources loaded successfully. Available models: {', '.join(registry.keys())}")
+    print("Resources loaded successfully.")
     yield
     ml_models.clear()
-
-
-def resolve_model_key(requested_model: Optional[str]) -> str:
-    """Resolve and validate model selection."""
-    if requested_model is None or requested_model.strip() == "":
-        return DEFAULT_MODEL_KEY
-
-    model_key = requested_model.strip().lower()
-    if model_key not in MODEL_ARTIFACTS:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid model selection. Use 'baseline' or 'augmented'.",
-        )
-
-    registry = ml_models.get("registry", {})
-    if model_key not in registry:
-        raise HTTPException(
-            status_code=503,
-            detail=f"Requested model '{model_key}' is unavailable on this server.",
-        )
-
-    return model_key
-
-
-def get_model_bundle(model_key: str):
-    registry = ml_models.get("registry", {})
-    bundle = registry.get(model_key)
-    if not bundle:
-        raise HTTPException(status_code=500, detail=f"Model '{model_key}' is not loaded")
-    return bundle
 
 app = FastAPI(lifespan = lifespan, title = "SignSpeak API")
 
@@ -195,7 +139,6 @@ async def debug_echo(data: SequenceData):
 @app.post("/predict-frames")
 async def predict_frames(
     frames: List[UploadFile] = File(...),
-    model: Optional[str] = Query(default=None, description="Model selector: baseline|augmented"),
 ):
     """
     Accept a batch of JPEG frames, extract landmarks server-side using
@@ -206,10 +149,10 @@ async def predict_frames(
     """
     start_time = time.time()
     
-    model_key = resolve_model_key(model)
-    bundle = get_model_bundle(model_key)
-    selected_model = bundle["model"]
-    selected_encoder = bundle["encoder"]
+    selected_model = ml_models.get("model")
+    selected_encoder = ml_models.get("encoder")
+    if not selected_model or not selected_encoder:
+        raise HTTPException(status_code=500, detail="Model or encoder not loaded")
     
     # Validate frame count
     if len(frames) != SEQUENCE_LENGTH:
@@ -277,7 +220,7 @@ async def predict_frames(
     
     processing_time = (time.time() - start_time) * 1000  # ms
     
-    print(f"[predict-frames] Model: {model_key}, Action: {action_label}, Confidence: {confidence:.3f}, "
+    print(f"[predict-frames] Action: {action_label}, Confidence: {confidence:.3f}, "
           f"Hands detected: {hands_detected}/{SEQUENCE_LENGTH}, "
           f"Processing: {processing_time:.0f}ms")
     
@@ -288,7 +231,6 @@ async def predict_frames(
             label: float(prob)
             for label, prob in zip(selected_encoder.classes_, prediction)
         },
-        "model_used": model_key,
         "processing_time_ms": round(processing_time),
         "frames_processed": len(frames),
         "hands_detected": hands_detected,

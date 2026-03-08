@@ -25,7 +25,7 @@ Detected on mobile:
 25. facelotion: https://psl.org.pk/dictionary/15-beauty/650-face-lotion (29. Detects)
 26. beak: https://psl.org.pk/dictionary/17-birds/739-beak (X)
 27. crow: https://psl.org.pk/dictionary/17-birds/742-crow (X)
-
+28. bulb: https://psl.org.pk/dictionary/9-appliances/293-light-bulb
 
 1. hi/hello: https://psl.org.pk/dictionary/65-sentences/4309-hello (1. Detects)
 3. thankyou: https://psl.org.pk/dictionary/65-sentences/4369-thank-you (X)
